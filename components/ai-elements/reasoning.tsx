@@ -27,6 +27,27 @@ import { Streamdown } from "streamdown";
 
 import { Shimmer } from "./shimmer";
 
+// Icône atome
+const AtomIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 4c-4 0-6 2-6 4 0 2 2 4 6 4 4 0 6-2 6-4 0-2-2-4-6-4Z" />
+    <path d="M12 20c-4 0-6-2-6-4 0-2 2-4 6-4 4 0 6 2 6 4 0 2-2 4-6 4Z" />
+    <path d="M5.5 8c2 3.5 4 5 6.5 5s4.5-1.5 6.5-5" />
+    <path d="M5.5 16c2-3.5 4-5 6.5-5s4.5 1.5 6.5 5" />
+  </svg>
+);
+
 interface ReasoningContextValue {
   isStreaming: boolean;
   isOpen: boolean;
@@ -183,10 +204,12 @@ export const ReasoningTrigger = memo(
       >
         {children ?? (
           <>
-            {getThinkingMessage(isStreaming, duration)}
+            <AtomIcon />
+            <span>Reasoning</span>
+            {isStreaming && <Shimmer className="ml-1 text-xs" duration={1}>...</Shimmer>}
             <ChevronDownIcon
               className={cn(
-                "size-4 transition-transform",
+                "ml-auto size-4 transition-transform",
                 isOpen ? "rotate-180" : "rotate-0"
               )}
             />

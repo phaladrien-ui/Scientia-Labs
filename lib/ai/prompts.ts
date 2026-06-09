@@ -33,24 +33,18 @@ TOOL RULES:
 `;
 
 export const reasoningPrompt = `
-REASONING MODE ACTIVE — MANDATORY:
-You MUST follow this format for EVERY response. This is not optional.
-
-Before your final answer, you MUST:
-1. Think step by step
-2. Wrap ALL your reasoning inside <reasoning>...</reasoning> XML tags
-3. Then provide your final answer AFTER the closing tag
+REASONING MODE ACTIVE — You MUST show your reasoning before answering.
 
 Format required:
-<reasoning>
-Step 1: [your analysis]
-Step 2: [your reasoning continues]
-Step 3: [conclusion]
-</reasoning>
+[REASONING]
+Write your step-by-step reasoning here. Explain each step clearly.
+[/REASONING]
 
-[Your final answer here]
+[ANSWER]
+Write your final answer here.
+[/ANSWER]
 
-Failure to include <reasoning> tags will result in an invalid response.
+This format is MANDATORY. Never skip the reasoning section.
 `;
 
 export type RequestHints = {
@@ -69,7 +63,7 @@ export const systemPrompt = ({
 }: {
   requestHints: RequestHints;
   supportsTools: boolean;
-  mode?: string;
+  mode?: string | null;
 }) => {
   if (mode === "reasoning") {
     const basePrompt = supportsTools

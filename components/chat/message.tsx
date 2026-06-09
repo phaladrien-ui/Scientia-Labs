@@ -3,7 +3,7 @@
 
 import type { UseChatHelpers } from "@ai-sdk/react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useArtifact } from "@/hooks/use-artifact";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
@@ -121,22 +121,22 @@ const PurePreviewMessage = ({
 
     if (type === "text") {
       const reasoningMatch = part.text?.match(
-        /\[REASONING_START\]([\s\S]*?)\[REASONING_END\]/
+        /<reasoning>([\s\S]*?)<\/reasoning>/
       );
       const reasoningText = reasoningMatch ? reasoningMatch[1].trim() : "";
       const textWithoutReasoning = part.text
-        ?.replace(/\[REASONING_START\][\s\S]*?\[REASONING_END\]/, "")
+        ?.replace(/<reasoning>[\s\S]*?<\/reasoning>/, "")
         .trim();
 
       return (
-        <div key={key}>
+        <React.Fragment key={key}>
           {reasoningText && (
             <MessageReasoning isLoading={false} reasoning={reasoningText} />
           )}
           {textWithoutReasoning && (
             <MessageContent
               className={cn("text-[13px] leading-[1.65]", {
-                "w-fit max-w-[min(85%,80ch)] overflow-hidden break-words rounded-2xl rounded-br-lg border border-[#66b5ff]/20 bg-[#66b5ff]/10 px-3.5 py-2 shadow-none":
+                "w-fit max-w-[min(80%,56ch)] overflow-hidden break-words rounded-2xl rounded-br-lg border border-[#66b5ff]/20 bg-[#66b5ff]/10 px-3.5 py-2 shadow-none":
                   message.role === "user",
                 "[&_img]:inline-block [&_img]:max-w-[180px] [&_img]:max-h-[140px] [&_img]:rounded-lg [&_img]:object-cover [&_img]:border [&_img]:border-border/30 [&_img]:shadow-none [&_img]:mr-2 [&_img]:mb-2 [&_img]:align-top":
                   message.role === "assistant",
@@ -148,7 +148,7 @@ const PurePreviewMessage = ({
               </MessageResponse>
             </MessageContent>
           )}
-        </div>
+        </React.Fragment>
       );
     }
 

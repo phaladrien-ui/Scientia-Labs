@@ -65,8 +65,11 @@ export async function POST(request: Request) {
 
   try {
     const json = await request.json();
+    console.log("Raw JSON received:", JSON.stringify(json, null, 2));
     requestBody = postRequestBodySchema.parse(json);
-  } catch (_) {
+    console.log("Parsed request body:", JSON.stringify(requestBody, null, 2));
+  } catch (error) {
+    console.error("JSON parse or schema validation error:", error);
     return new ChatbotError("bad_request:api").toResponse();
   }
 
