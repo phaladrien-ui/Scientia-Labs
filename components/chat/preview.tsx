@@ -32,14 +32,18 @@ export function Preview() {
         </div>
 
         <div className="grid w-full max-w-md grid-cols-2 gap-2">
-          {suggestions.map((suggestion) => (
+          {suggestions.map((suggestion, index) => (
             <button
               className="rounded-xl border border-border/30 bg-card/20 px-3 py-2.5 text-left text-[11px] leading-relaxed text-muted-foreground/70 transition-all duration-200 hover:border-border/60 hover:bg-card/40 hover:text-muted-foreground"
-              key={suggestion}
-              onClick={() => handleAction(suggestion)}
+              key={index}
+              onClick={() =>
+                handleAction(
+                  typeof suggestion === "string" ? suggestion : suggestion.label
+                )
+              }
               type="button"
             >
-              {suggestion}
+              {typeof suggestion === "string" ? suggestion : suggestion.label}
             </button>
           ))}
         </div>
