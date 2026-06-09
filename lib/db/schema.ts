@@ -146,3 +146,32 @@ export const userSettings = pgTable("UserSettings", {
 });
 
 export type UserSettings = InferSelectModel<typeof userSettings>;
+
+// ============ MODULE SIMULATIONS ============
+
+export const simulation = pgTable("Simulation", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("userId")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  type: text("type").notNull(),
+  category: text("category").notNull(),
+  parameters: json("parameters").notNull().default({}),
+  code: text("code"),
+  isFavorite: boolean("isFavorite").default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Simulation = InferSelectModel<typeof simulation>;
+
+export const userCategory = pgTable("UserCategory", {
+  userId: uuid("userId")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  category: text("category").notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type UserCategory = InferSelectModel<typeof userCategory>;
