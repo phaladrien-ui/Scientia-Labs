@@ -199,10 +199,9 @@ export async function POST(request: Request) {
     const modelMessages = await convertToModelMessages(uiMessages);
 
     // DÉTECTION SITE : forcer l'appel au tool
+    const textPart = message?.parts?.find((p) => p.type === "text");
     const userText =
-      message?.parts?.find(
-        (p: { type: string; text?: string }) => p.type === "text"
-      )?.text || "";
+      (textPart && "text" in textPart ? textPart.text : "") || "";
     const siteKeywords = [
       "site",
       "landing page",
