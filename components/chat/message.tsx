@@ -90,7 +90,6 @@ const PurePreviewMessage = ({
   const mergedReasoning = message.parts?.reduce(
     (acc, part) => {
       if (part.type === "reasoning" && part.text?.trim().length > 0) {
-        console.log("REASONING PART DETECTED:", part);
         return {
           text: acc.text ? `${acc.text}\n\n${part.text}` : part.text,
           isStreaming: "state" in part ? part.state === "streaming" : false,
@@ -105,8 +104,6 @@ const PurePreviewMessage = ({
   const parts = message.parts?.map((part, index) => {
     const { type } = part;
     const key = `message-${message.id}-part-${index}`;
-
-    console.log("PART TYPE:", type);
 
     if (type === "reasoning") {
       if (!mergedReasoning.rendered && mergedReasoning.text) {
@@ -130,9 +127,6 @@ const PurePreviewMessage = ({
       const textWithoutReasoning = part.text
         ?.replace(/<reasoning>[\s\S]*?<\/reasoning>/, "")
         .trim();
-
-      if (reasoningText)
-        console.log("TEXT REASONING FOUND:", reasoningText.slice(0, 100));
 
       return (
         <React.Fragment key={key}>
