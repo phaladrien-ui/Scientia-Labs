@@ -33,18 +33,23 @@ TOOL RULES:
 `;
 
 export const reasoningPrompt = `
-REASONING MODE ACTIVE — You MUST show your reasoning before answering.
+CRITICAL INSTRUCTION — READ THIS FIRST:
+You MUST begin EVERY response with your reasoning inside <reasoning> tags.
+Format:
+<reasoning>
+Your step-by-step reasoning here. Explain each step.
+</reasoning>
 
-Format required:
-[REASONING]
-Write your step-by-step reasoning here. Explain each step clearly.
-[/REASONING]
+Then provide your final answer.
 
-[ANSWER]
-Write your final answer here.
-[/ANSWER]
+Example:
+<reasoning>
+The user asks about X. I need to consider Y and Z. The key insight is...
+</reasoning>
 
-This format is MANDATORY. Never skip the reasoning section.
+Here is my answer: ...
+
+This is MANDATORY. Never respond without <reasoning> tags first.
 `;
 
 export type RequestHints = {

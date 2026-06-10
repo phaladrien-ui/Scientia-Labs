@@ -65,11 +65,8 @@ export async function POST(request: Request) {
 
   try {
     const json = await request.json();
-    console.log("Raw JSON received:", JSON.stringify(json, null, 2));
     requestBody = postRequestBodySchema.parse(json);
-    console.log("Parsed request body:", JSON.stringify(requestBody, null, 2));
-  } catch (error) {
-    console.error("JSON parse or schema validation error:", error);
+  } catch (_) {
     return new ChatbotError("bad_request:api").toResponse();
   }
 
@@ -233,7 +230,7 @@ export async function POST(request: Request) {
       modelMessages.push({
         role: "system",
         content:
-          "You MUST reason step by step before answering. Wrap your reasoning in <reasoning>...</reasoning> XML tags, then provide your final answer.",
+          "CRITICAL: You MUST begin your response with <reasoning> tags. Write your step-by-step reasoning inside, then provide your final answer. Format: <reasoning>your reasoning here</reasoning> then your answer.",
       } as any);
     }
 
