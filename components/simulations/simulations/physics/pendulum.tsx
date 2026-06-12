@@ -119,8 +119,10 @@ export function Pendulum({ isRunning }: { isRunning: boolean }) {
     const pCvs = phaseCvs.current;
     if (!mCvs || !pCvs) return;
 
-    const mCtx = mCvs.getContext("2d")!;
-    const pCtx = pCvs.getContext("2d")!;
+    const mCtx = mCvs.getContext("2d");
+    const pCtx = pCvs.getContext("2d");
+    if (!mCtx || !pCtx) return;
+
     const dpr = window.devicePixelRatio || 1;
 
     const scaleCanvas = (
@@ -140,8 +142,8 @@ export function Pendulum({ isRunning }: { isRunning: boolean }) {
       PH = 0;
 
     function resize() {
-      const m = scaleCanvas(mCvs, mCtx);
-      const p = scaleCanvas(pCvs, pCtx);
+      const m = scaleCanvas(mCvs!, mCtx!);
+      const p = scaleCanvas(pCvs!, pCtx!);
       MW = m.w;
       MH = m.h;
       PW = p.w;
@@ -161,99 +163,100 @@ export function Pendulum({ isRunning }: { isRunning: boolean }) {
       c: SimConfig
     ) => {
       const cx = MCX();
-      mCtx.clearRect(0, 0, MW, MH);
+      const ctx = mCtx!;
+      ctx.clearRect(0, 0, MW, MH);
 
       // Grille
-      mCtx.save();
-      mCtx.strokeStyle = "rgba(128,128,128,0.06)";
-      mCtx.lineWidth = 0.5;
+      ctx.save();
+      ctx.strokeStyle = "rgba(128,128,128,0.06)";
+      ctx.lineWidth = 0.5;
       for (let x = 0; x < MW; x += 40) {
-        mCtx.beginPath();
-        mCtx.moveTo(x, 0);
-        mCtx.lineTo(x, MH);
-        mCtx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, MH);
+        ctx.stroke();
       }
       for (let y = 0; y < MH; y += 40) {
-        mCtx.beginPath();
-        mCtx.moveTo(0, y);
-        mCtx.lineTo(MW, y);
-        mCtx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(MW, y);
+        ctx.stroke();
       }
-      mCtx.restore();
+      ctx.restore();
 
       // Arc de rotation
-      mCtx.save();
-      mCtx.setLineDash([4, 6]);
-      mCtx.strokeStyle = "rgba(128,128,128,0.18)";
-      mCtx.lineWidth = 0.8;
-      mCtx.beginPath();
-      mCtx.arc(cx, PIVOT_Y, c.L, 0, Math.PI * 2);
-      mCtx.stroke();
-      mCtx.setLineDash([]);
-      mCtx.restore();
+      ctx.save();
+      ctx.setLineDash([4, 6]);
+      ctx.strokeStyle = "rgba(128,128,128,0.18)";
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.arc(cx, PIVOT_Y, c.L, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
 
       // Trail
       if (showTrail && trailRef.current.length > 1) {
         const trail = trailRef.current;
-        mCtx.save();
-        mCtx.lineCap = "round";
-        mCtx.lineJoin = "round";
+        ctx.save();
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
         for (let i = 1; i < trail.length; i++) {
           const a = i / trail.length;
-          mCtx.beginPath();
-          mCtx.moveTo(trail[i - 1].x, trail[i - 1].y);
-          mCtx.lineTo(trail[i].x, trail[i].y);
-          mCtx.globalAlpha = 0.08 + a * 0.55;
-          mCtx.strokeStyle = `hsl(${210 + a * 30}, 80%, 58%)`;
-          mCtx.lineWidth = 0.8 + a * 2.2;
-          mCtx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
+          ctx.lineTo(trail[i].x, trail[i].y);
+          ctx.globalAlpha = 0.08 + a * 0.55;
+          ctx.strokeStyle = `hsl(${210 + a * 30}, 80%, 58%)`;
+          ctx.lineWidth = 0.8 + a * 2.2;
+          ctx.stroke();
         }
-        mCtx.globalAlpha = 1;
-        mCtx.restore();
+        ctx.globalAlpha = 1;
+        ctx.restore();
       }
 
       // Tige
-      mCtx.save();
-      mCtx.beginPath();
-      mCtx.moveTo(cx, PIVOT_Y);
-      mCtx.lineTo(bx, by);
-      mCtx.strokeStyle = "rgba(140,140,140,0.6)";
-      mCtx.lineWidth = 1.5;
-      mCtx.stroke();
-      mCtx.restore();
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(cx, PIVOT_Y);
+      ctx.lineTo(bx, by);
+      ctx.strokeStyle = "rgba(140,140,140,0.6)";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.restore();
 
       // Pivot
-      mCtx.save();
-      mCtx.beginPath();
-      mCtx.arc(cx, PIVOT_Y, 5, 0, Math.PI * 2);
-      mCtx.fillStyle = "rgba(90,90,90,0.75)";
-      mCtx.fill();
-      mCtx.restore();
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, PIVOT_Y, 5, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(90,90,90,0.75)";
+      ctx.fill();
+      ctx.restore();
 
       // Bob
-      mCtx.save();
-      mCtx.beginPath();
-      mCtx.arc(bx, by, BOB_R + 6, 0, Math.PI * 2);
-      mCtx.fillStyle = "rgba(55,138,221,0.10)";
-      mCtx.fill();
-      mCtx.beginPath();
-      mCtx.arc(bx, by, BOB_R, 0, Math.PI * 2);
-      mCtx.fillStyle = "#378ADD";
-      mCtx.fill();
-      mCtx.strokeStyle = "rgba(55,138,221,0.40)";
-      mCtx.lineWidth = 2;
-      mCtx.stroke();
-      mCtx.beginPath();
-      mCtx.arc(
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(bx, by, BOB_R + 6, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(55,138,221,0.10)";
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(bx, by, BOB_R, 0, Math.PI * 2);
+      ctx.fillStyle = "#378ADD";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(55,138,221,0.40)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(
         bx - BOB_R * 0.32,
         by - BOB_R * 0.32,
         BOB_R * 0.28,
         0,
         Math.PI * 2
       );
-      mCtx.fillStyle = "rgba(255,255,255,0.28)";
-      mCtx.fill();
-      mCtx.restore();
+      ctx.fillStyle = "rgba(255,255,255,0.28)";
+      ctx.fill();
+      ctx.restore();
 
       // Vecteur vitesse
       const vMag = s.omega * c.L * 0.28;
@@ -263,28 +266,28 @@ export function Pendulum({ isRunning }: { isRunning: boolean }) {
         const vy = by + Math.cos(va) * vMag;
         const hLen = 7;
         const hAng = Math.atan2(vy - by, vx - bx);
-        mCtx.save();
-        mCtx.strokeStyle = "rgba(213,90,48,0.80)";
-        mCtx.fillStyle = "rgba(213,90,48,0.80)";
-        mCtx.lineWidth = 2;
-        mCtx.lineCap = "round";
-        mCtx.beginPath();
-        mCtx.moveTo(bx, by);
-        mCtx.lineTo(vx, vy);
-        mCtx.stroke();
-        mCtx.beginPath();
-        mCtx.moveTo(vx, vy);
-        mCtx.lineTo(
+        ctx.save();
+        ctx.strokeStyle = "rgba(213,90,48,0.80)";
+        ctx.fillStyle = "rgba(213,90,48,0.80)";
+        ctx.lineWidth = 2;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(bx, by);
+        ctx.lineTo(vx, vy);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(vx, vy);
+        ctx.lineTo(
           vx - hLen * Math.cos(hAng - 0.45),
           vy - hLen * Math.sin(hAng - 0.45)
         );
-        mCtx.lineTo(
+        ctx.lineTo(
           vx - hLen * Math.cos(hAng + 0.45),
           vy - hLen * Math.sin(hAng + 0.45)
         );
-        mCtx.closePath();
-        mCtx.fill();
-        mCtx.restore();
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
       }
     };
 
@@ -292,58 +295,59 @@ export function Pendulum({ isRunning }: { isRunning: boolean }) {
 
     const drawPhase = () => {
       const pts = phaseRef.current;
-      pCtx.clearRect(0, 0, PW, PH);
+      const ctx = pCtx!;
+      ctx.clearRect(0, 0, PW, PH);
 
-      pCtx.save();
-      pCtx.strokeStyle = "rgba(128,128,128,0.12)";
-      pCtx.lineWidth = 0.5;
-      pCtx.beginPath();
-      pCtx.moveTo(PW / 2, 0);
-      pCtx.lineTo(PW / 2, PH);
-      pCtx.stroke();
-      pCtx.beginPath();
-      pCtx.moveTo(0, PH / 2);
-      pCtx.lineTo(PW, PH / 2);
-      pCtx.stroke();
-      pCtx.restore();
+      ctx.save();
+      ctx.strokeStyle = "rgba(128,128,128,0.12)";
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(PW / 2, 0);
+      ctx.lineTo(PW / 2, PH);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, PH / 2);
+      ctx.lineTo(PW, PH / 2);
+      ctx.stroke();
+      ctx.restore();
 
-      pCtx.save();
-      pCtx.font = "9px sans-serif";
-      pCtx.fillStyle = "rgba(128,128,128,0.5)";
-      pCtx.fillText("θ →", PW - 18, PH / 2 - 3);
-      pCtx.fillText("↑ ω", PW / 2 + 3, 11);
-      pCtx.restore();
+      ctx.save();
+      ctx.font = "9px sans-serif";
+      ctx.fillStyle = "rgba(128,128,128,0.5)";
+      ctx.fillText("θ →", PW - 18, PH / 2 - 3);
+      ctx.fillText("↑ ω", PW / 2 + 3, 11);
+      ctx.restore();
 
       if (pts.length < 2) return;
 
       const thR = Math.PI * 1.2;
       const omR = Math.max(...pts.map((p) => Math.abs(p[1]))) * 1.2 || 3;
 
-      pCtx.save();
-      pCtx.lineCap = "round";
+      ctx.save();
+      ctx.lineCap = "round";
       for (let i = 1; i < pts.length; i++) {
         const a = i / pts.length;
         const x1 = PW / 2 + (pts[i - 1][0] / thR) * (PW / 2 - 8);
         const y1 = PH / 2 - (pts[i - 1][1] / omR) * (PH / 2 - 8);
         const x2 = PW / 2 + (pts[i][0] / thR) * (PW / 2 - 8);
         const y2 = PH / 2 - (pts[i][1] / omR) * (PH / 2 - 8);
-        pCtx.beginPath();
-        pCtx.moveTo(x1, y1);
-        pCtx.lineTo(x2, y2);
-        pCtx.globalAlpha = 0.15 + a * 0.85;
-        pCtx.strokeStyle = `hsl(${260 - a * 80}, 75%, 58%)`;
-        pCtx.lineWidth = 1.2;
-        pCtx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.globalAlpha = 0.15 + a * 0.85;
+        ctx.strokeStyle = `hsl(${260 - a * 80}, 75%, 58%)`;
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
       }
       const last = pts[pts.length - 1];
       const lpx = PW / 2 + (last[0] / thR) * (PW / 2 - 8);
       const lpy = PH / 2 - (last[1] / omR) * (PH / 2 - 8);
-      pCtx.globalAlpha = 1;
-      pCtx.beginPath();
-      pCtx.arc(lpx, lpy, 3, 0, Math.PI * 2);
-      pCtx.fillStyle = "#378ADD";
-      pCtx.fill();
-      pCtx.restore();
+      ctx.globalAlpha = 1;
+      ctx.beginPath();
+      ctx.arc(lpx, lpy, 3, 0, Math.PI * 2);
+      ctx.fillStyle = "#378ADD";
+      ctx.fill();
+      ctx.restore();
     };
 
     // ── Boucle principale ─────────────────────────────────────────────────────
@@ -380,7 +384,6 @@ export function Pendulum({ isRunning }: { isRunning: boolean }) {
       drawMain(bx, by, s, c);
       drawPhase();
 
-      // Mise à jour HUD via DOM direct (toutes les 3 frames)
       frameCount++;
       if (frameCount % 3 === 0) {
         const els = hudEls.current;
