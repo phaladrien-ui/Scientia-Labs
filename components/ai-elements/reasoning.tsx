@@ -1,3 +1,4 @@
+// components/ai-elements/reasoning.tsx
 "use client";
 
 import type { ComponentProps, HTMLAttributes, ReactNode } from "react";
@@ -12,7 +13,7 @@ import { cjk } from "@streamdown/cjk";
 import { code } from "@streamdown/code";
 import { math } from "@streamdown/math";
 import { mermaid } from "@streamdown/mermaid";
-import { ChevronDownIcon } from "lucide-react";
+import { ChevronDownIcon, LightbulbIcon } from "lucide-react";
 import {
   createContext,
   memo,
@@ -26,27 +27,6 @@ import {
 import { Streamdown } from "streamdown";
 
 import { Shimmer } from "./shimmer";
-
-// Icône atome
-const AtomIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="4" />
-    <path d="M12 4c-4 0-6 2-6 4 0 2 2 4 6 4 4 0 6-2 6-4 0-2-2-4-6-4Z" />
-    <path d="M12 20c-4 0-6-2-6-4 0-2 2-4 6-4 4 0 6 2 6 4 0 2-2 4-6 4Z" />
-    <path d="M5.5 8c2 3.5 4 5 6.5 5s4.5-1.5 6.5-5" />
-    <path d="M5.5 16c2-3.5 4-5 6.5-5s4.5 1.5 6.5 5" />
-  </svg>
-);
 
 interface ReasoningContextValue {
   isStreaming: boolean;
@@ -88,7 +68,6 @@ export const Reasoning = memo(
     ...props
   }: ReasoningProps) => {
     const resolvedDefaultOpen = defaultOpen ?? isStreaming;
-    // Track if defaultOpen was explicitly set to false (to prevent auto-open)
     const isExplicitlyClosed = defaultOpen === false;
 
     const [isOpen, setIsOpen] = useControllableState<boolean>({
@@ -105,7 +84,6 @@ export const Reasoning = memo(
     const [hasAutoClosed, setHasAutoClosed] = useState(false);
     const startTimeRef = useRef<number | null>(null);
 
-    // Track when streaming starts and compute duration
     useEffect(() => {
       if (isStreaming) {
         hasEverStreamedRef.current = true;
@@ -118,14 +96,12 @@ export const Reasoning = memo(
       }
     }, [isStreaming, setDuration]);
 
-    // Auto-open when streaming starts (unless explicitly closed)
     useEffect(() => {
       if (isStreaming && !isOpen && !isExplicitlyClosed) {
         setIsOpen(true);
       }
     }, [isStreaming, isOpen, setIsOpen, isExplicitlyClosed]);
 
-    // Auto-close when streaming ends (once only, and only if it ever streamed)
     useEffect(() => {
       if (
         hasEverStreamedRef.current &&
@@ -197,19 +173,18 @@ export const ReasoningTrigger = memo(
     return (
       <CollapsibleTrigger
         className={cn(
-          "flex w-full items-center gap-2 text-muted-foreground text-[13px] leading-[1.65] transition-colors hover:text-foreground",
+          "flex w-full items-center gap-1.5 text-foreground/80 text-[13px] leading-[1.65] transition-colors hover:text-foreground",
           className
         )}
         {...props}
       >
         {children ?? (
           <>
-            <AtomIcon />
+            <LightbulbIcon className="size-3.5" />
             <span>Reasoning</span>
-            {isStreaming && <Shimmer className="ml-1 text-xs" duration={1}>...</Shimmer>}
             <ChevronDownIcon
               className={cn(
-                "ml-auto size-4 transition-transform",
+                "size-3.5 transition-transform",
                 isOpen ? "rotate-180" : "rotate-0"
               )}
             />
@@ -241,12 +216,12 @@ export const ReasoningContent = memo(
     return (
       <div
         className={cn(
-          "mt-2 animate-in fade-in-0 duration-200 text-muted-foreground/60 [overflow-anchor:none]",
+          "mt-2 animate-in fade-in-0 duration-200 [overflow-anchor:none]",
           className
         )}
       >
         <div
-          className="max-h-[200px] overflow-y-auto rounded-lg border border-border/20 bg-muted/30 px-3 py-2 text-[11px] leading-relaxed"
+          className="max-h-[200px] overflow-y-auto rounded-lg border border-border/20 bg-muted/30 px-3 py-2 text-[11px] leading-relaxed text-foreground/70"
           ref={scrollRef}
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >

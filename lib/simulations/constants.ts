@@ -37,26 +37,28 @@ export const CATEGORIES = [
 export const DEFAULT_SIMULATIONS: Record<string, SimulationCard[]> = {
   physics: [
     {
-      id: "pendulum",
+      id: "pendulum-physics",
       title: "Simple Pendulum",
-      type: "pendulum",
+      type: "pendulum-physics",
       description:
-        "Simulate the motion of a pendulum with adjustable length and gravity",
-      icon: "🕐",
+        "Oscillation, période, gravité — ajustez les paramètres en temps réel",
+      icon: "⏳",
     },
     {
-      id: "projectile",
-      title: "Projectile Motion",
-      type: "projectile",
-      description: "Launch a projectile with initial velocity and angle",
-      icon: "🎯",
+      id: "nbody",
+      title: "N-Body Gravitation",
+      type: "nbody",
+      description:
+        "Simulez la gravité entre corps massifs — orbites, collisions, chaos",
+      icon: "🌌",
     },
     {
-      id: "wave",
-      title: "Wave Propagation",
-      type: "wave",
-      description: "Visualize transverse and longitudinal waves",
-      icon: "〰️",
+      id: "waves",
+      title: "Wave Interference",
+      type: "waves",
+      description:
+        "Ondes 2D, interférences, diffraction — cliquez pour perturber le champ",
+      icon: "🌊",
     },
   ],
   chemistry: [

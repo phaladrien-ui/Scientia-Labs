@@ -8,6 +8,9 @@ export type SimulationCategory =
 
 export type SimulationType =
   | "pendulum"
+  | "pendulum-physics"
+  | "nbody"
+  | "waves"
   | "projectile"
   | "wave"
   | "circuit"
