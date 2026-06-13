@@ -143,8 +143,6 @@ export function ActiveChatProvider({ children }: { children: ReactNode }) {
             })
           );
 
-        console.log("MODE REF:", modeRef.current);
-
         return {
           body: {
             id: request.id,

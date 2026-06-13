@@ -17,7 +17,7 @@ async function searchTavily(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         query,
-        api_key: process.env.TAVILY_API_KEY || "tvly-dev-",
+        api_key: process.env.TAVILY_API_KEY ?? "",
         search_depth: "basic",
         max_results: 5,
         include_images: true,

@@ -1,8 +1,13 @@
 // app/simulations/api/category/route.ts
 
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/app/(auth)/auth";
 import { getUserCategory, setUserCategory } from "@/lib/simulations/queries";
+
+const categorySchema = z.object({
+  category: z.string().min(1).max(100),
+});
 
 export async function GET() {
   const session = await auth();
@@ -20,7 +25,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { category } = await request.json();
-  await setUserCategory(session.user.id, category);
+  const parsed = categorySchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid category" }, { status: 400 });
+  }
+
+  await setUserCategory(session.user.id, parsed.data.category);
   return NextResponse.json({ success: true });
 }
