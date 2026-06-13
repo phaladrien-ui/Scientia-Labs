@@ -1,4 +1,3 @@
-import { auth } from "@/app/(auth)/auth";
 import {
   deleteAllChatsByUserId,
   deleteUserById,
@@ -8,31 +7,30 @@ import {
   updateUserProfile,
   upsertUserSettings,
 } from "@/lib/db/queries";
-import { ChatbotError } from "@/lib/errors";
+import { authenticateRequest } from "@/lib/auth/api-helpers";
 
 export async function GET() {
-  const session = await auth();
+  const authResult = await authenticateRequest("chat");
+  if (authResult.error) return authResult.error;
 
-  if (!session?.user) {
-    return new ChatbotError("unauthorized:chat").toResponse();
-  }
+  const { user } = authResult.session;
 
   const [stats, settings, userRecord] = await Promise.all([
-    getUserStats({ userId: session.user.id }),
-    getUserSettings({ userId: session.user.id }),
-    getUser(session.user.email ?? ""),
+    getUserStats({ userId: user.id }),
+    getUserSettings({ userId: user.id }),
+    getUser(user.email ?? ""),
   ]);
 
   const currentUser = userRecord[0];
 
   return Response.json({
     user: {
-      id: session.user.id,
-      name: currentUser?.name ?? session.user.name ?? null,
-      email: session.user.email ?? null,
-      image: currentUser?.image ?? session.user.image ?? null,
+      id: user.id,
+      name: currentUser?.name ?? user.name ?? null,
+      email: user.email ?? null,
+      image: currentUser?.image ?? user.image ?? null,
       bio: currentUser?.bio ?? null,
-      type: session.user.type,
+      type: user.type,
       createdAt: currentUser?.createdAt?.toISOString() ?? null,
     },
     stats,
@@ -41,18 +39,17 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  const session = await auth();
+  const authResult = await authenticateRequest("chat");
+  if (authResult.error) return authResult.error;
 
-  if (!session?.user) {
-    return new ChatbotError("unauthorized:chat").toResponse();
-  }
+  const { user } = authResult.session;
 
   const body = await request.json();
   const { name, bio, image, preferences } = body;
 
   if (name !== undefined || bio !== undefined || image !== undefined) {
     await updateUserProfile({
-      userId: session.user.id,
+      userId: user.id,
       name,
       bio,
       image,
@@ -61,7 +58,7 @@ export async function PATCH(request: Request) {
 
   if (preferences !== undefined) {
     await upsertUserSettings({
-      userId: session.user.id,
+      userId: user.id,
       preferences,
     });
   }
@@ -70,22 +67,21 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const session = await auth();
+  const authResult = await authenticateRequest("chat");
+  if (authResult.error) return authResult.error;
 
-  if (!session?.user) {
-    return new ChatbotError("unauthorized:chat").toResponse();
-  }
+  const { user } = authResult.session;
 
   const { searchParams } = new URL(request.url);
   const scope = searchParams.get("scope");
 
   if (scope === "chats") {
-    const result = await deleteAllChatsByUserId({ userId: session.user.id });
+    const result = await deleteAllChatsByUserId({ userId: user.id });
     return Response.json(result, { status: 200 });
   }
 
   if (scope === "account") {
-    await deleteUserById({ userId: session.user.id });
+    await deleteUserById({ userId: user.id });
     return Response.json({ success: true }, { status: 200 });
   }
 

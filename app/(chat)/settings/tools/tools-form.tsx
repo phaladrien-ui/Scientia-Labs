@@ -9,12 +9,13 @@ import {
   Timer,
   Wrench,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Card } from "@/components/chat/settings/shared/card";
+import { CardHeader } from "@/components/chat/settings/shared/card-header";
 import { Row } from "@/components/chat/settings/shared/row";
 import { SectionLabel } from "@/components/chat/settings/shared/section-label";
 import { Toggle } from "@/components/chat/settings/shared/toggle";
+import { useSavePreferences } from "@/hooks/use-save-preferences";
 
 const INTEGRATIONS = [
   {
@@ -54,7 +55,7 @@ export function ToolsForm({
 }: {
   initialPreferences: Record<string, unknown>;
 }) {
-  const router = useRouter();
+  const save = useSavePreferences();
 
   const [connectedTools, setConnectedTools] = useState<string[]>(
     (initialPreferences.connectedTools as string[]) ?? []
@@ -74,19 +75,6 @@ export function ToolsForm({
   const [sandboxMode, setSandboxMode] = useState(
     (initialPreferences.sandboxMode as boolean) ?? true
   );
-
-  async function save(data: Record<string, unknown>) {
-    try {
-      await fetch("/api/settings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ preferences: data }),
-      });
-      router.refresh();
-    } catch (err) {
-      console.error("Save failed:", err);
-    }
-  }
 
   const prefs = {
     connectedTools,
@@ -116,14 +104,10 @@ export function ToolsForm({
       <SectionLabel>Tools & Integrations</SectionLabel>
 
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Connected integrations
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Connect external services your agents can use.
-          </p>
-        </div>
+        <CardHeader
+          title="Connected integrations"
+          description="Connect external services your agents can use."
+        />
         {INTEGRATIONS.map((tool) => {
           const isConnected = connectedTools.includes(tool.id);
           return (
@@ -151,14 +135,10 @@ export function ToolsForm({
       </Card>
 
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Tool permissions
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Set access levels for each connected tool.
-          </p>
-        </div>
+        <CardHeader
+          title="Tool permissions"
+          description="Set access levels for each connected tool."
+        />
         {connectedTools.map((toolId) => {
           const tool = INTEGRATIONS.find((t) => t.id === toolId);
           if (!tool) {
@@ -198,14 +178,10 @@ export function ToolsForm({
       </Card>
 
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Limits & safety
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Configure execution boundaries for tools.
-          </p>
-        </div>
+        <CardHeader
+          title="Limits & safety"
+          description="Configure execution boundaries for tools."
+        />
         <Row
           action={
             <div className="flex items-center gap-2">

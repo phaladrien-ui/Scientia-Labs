@@ -1,13 +1,11 @@
-import { auth } from "@/app/(auth)/auth";
-import { getUser, getUserSettings } from "@/lib/db/queries";
+import { getUser } from "@/lib/db/queries";
+import { getSettingsPageData } from "@/lib/settings/get-settings-page-data";
 import { GeneralForm } from "./general-form";
 
 export default async function GeneralPage() {
-  const session = await auth();
+  const { session, prefs } = await getSettingsPageData();
   const userRecord = await getUser(session?.user?.email ?? "");
-  const settings = await getUserSettings({ userId: session?.user?.id ?? "" });
   const currentUser = userRecord[0];
-  const prefs = (settings?.preferences ?? {}) as Record<string, unknown>;
 
   return (
     <GeneralForm

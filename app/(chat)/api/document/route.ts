@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { auth } from "@/app/(auth)/auth";
 import type { ArtifactKind } from "@/components/chat/artifact";
 import {
   deleteDocumentsByIdAfterTimestamp,
@@ -8,6 +7,7 @@ import {
   updateDocumentContent,
 } from "@/lib/db/queries";
 import { ChatbotError } from "@/lib/errors";
+import { authenticateRequest } from "@/lib/auth/api-helpers";
 
 const documentSchema = z.object({
   content: z.string(),
@@ -27,11 +27,8 @@ export async function GET(request: Request) {
     ).toResponse();
   }
 
-  const session = await auth();
-
-  if (!session?.user) {
-    return new ChatbotError("unauthorized:document").toResponse();
-  }
+  const authResult = await authenticateRequest("document");
+  if (authResult.error) return authResult.error;
 
   const documents = await getDocumentsById({ id });
 
@@ -41,7 +38,7 @@ export async function GET(request: Request) {
     return new ChatbotError("not_found:document").toResponse();
   }
 
-  if (document.userId !== session.user.id) {
+  if (document.userId !== authResult.session.user.id) {
     return new ChatbotError("forbidden:document").toResponse();
   }
 
@@ -59,11 +56,8 @@ export async function POST(request: Request) {
     ).toResponse();
   }
 
-  const session = await auth();
-
-  if (!session?.user) {
-    return new ChatbotError("not_found:document").toResponse();
-  }
+  const authResult = await authenticateRequest("document");
+  if (authResult.error) return authResult.error;
 
   let content: string;
   let title: string;
@@ -88,7 +82,7 @@ export async function POST(request: Request) {
   if (documents.length > 0) {
     const [doc] = documents;
 
-    if (doc.userId !== session.user.id) {
+    if (doc.userId !== authResult.session.user.id) {
       return new ChatbotError("forbidden:document").toResponse();
     }
   }
@@ -103,7 +97,7 @@ export async function POST(request: Request) {
     content,
     title,
     kind,
-    userId: session.user.id,
+    userId: authResult.session.user.id,
   });
 
   return Response.json(document, { status: 200 });
@@ -128,17 +122,14 @@ export async function DELETE(request: Request) {
     ).toResponse();
   }
 
-  const session = await auth();
-
-  if (!session?.user) {
-    return new ChatbotError("unauthorized:document").toResponse();
-  }
+  const authResult = await authenticateRequest("document");
+  if (authResult.error) return authResult.error;
 
   const documents = await getDocumentsById({ id });
 
   const [document] = documents;
 
-  if (document.userId !== session.user.id) {
+  if (document.userId !== authResult.session.user.id) {
     return new ChatbotError("forbidden:document").toResponse();
   }
 

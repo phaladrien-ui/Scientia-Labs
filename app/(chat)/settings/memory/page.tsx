@@ -1,11 +1,8 @@
-import { auth } from "@/app/(auth)/auth";
-import { getUserSettings } from "@/lib/db/queries";
+import { getSettingsPageData } from "@/lib/settings/get-settings-page-data";
 import { MemoryForm } from "./memory-form";
 
 export default async function MemoryPage() {
-  const session = await auth();
-  const settings = await getUserSettings({ userId: session?.user?.id ?? "" });
-  const prefs = (settings?.preferences ?? {}) as Record<string, unknown>;
+  const { prefs } = await getSettingsPageData();
 
   return <MemoryForm initialPreferences={prefs} />;
 }

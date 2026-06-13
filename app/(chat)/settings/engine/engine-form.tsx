@@ -1,20 +1,21 @@
 "use client";
 
 import { Cpu, Shield, Timer, Zap } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Card } from "@/components/chat/settings/shared/card";
+import { CardHeader } from "@/components/chat/settings/shared/card-header";
 import { Row } from "@/components/chat/settings/shared/row";
 import { SectionLabel } from "@/components/chat/settings/shared/section-label";
 import { Toggle } from "@/components/chat/settings/shared/toggle";
 import { UsageBar } from "@/components/chat/settings/shared/usage-bar";
+import { useSavePreferences } from "@/hooks/use-save-preferences";
 
 export function EngineForm({
   initialPreferences,
 }: {
   initialPreferences: Record<string, unknown>;
 }) {
-  const router = useRouter();
+  const save = useSavePreferences();
 
   const [temperature, setTemperature] = useState(
     (initialPreferences.temperature as number) ?? 0.7
@@ -42,19 +43,6 @@ export function EngineForm({
     (initialPreferences.costLimit as number) ?? 50
   );
 
-  async function save(data: Record<string, unknown>) {
-    try {
-      await fetch("/api/settings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ preferences: data }),
-      });
-      router.refresh();
-    } catch (err) {
-      console.error("Save failed:", err);
-    }
-  }
-
   const prefs = {
     temperature,
     maxContext,
@@ -72,14 +60,10 @@ export function EngineForm({
       <SectionLabel>Model Engine</SectionLabel>
 
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Precision & creativity
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Control how Orion balances precision and creativity.
-          </p>
-        </div>
+        <CardHeader
+          title="Precision & creativity"
+          description="Control how Orion balances precision and creativity."
+        />
         <div className="p-5 space-y-5">
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -139,14 +123,10 @@ export function EngineForm({
       </Card>
 
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Context & sampling
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Fine-tune how Orion processes and generates responses.
-          </p>
-        </div>
+        <CardHeader
+          title="Context & sampling"
+          description="Fine-tune how Orion processes and generates responses."
+        />
         <div className="p-5 space-y-5">
           <div>
             <UsageBar label="Max context" total={32_000} used={maxContext} />
@@ -214,14 +194,10 @@ export function EngineForm({
       </Card>
 
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Features
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Enable or disable core engine capabilities.
-          </p>
-        </div>
+        <CardHeader
+          title="Features"
+          description="Enable or disable core engine capabilities."
+        />
         <Row
           action={
             <Toggle
@@ -270,14 +246,10 @@ export function EngineForm({
       </Card>
 
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Cost control
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Set a monthly spending limit for compute.
-          </p>
-        </div>
+        <CardHeader
+          title="Cost control"
+          description="Set a monthly spending limit for compute."
+        />
         <div className="p-5">
           <div className="flex items-center gap-3">
             <Shield className="size-4 text-neutral-400 shrink-0" />

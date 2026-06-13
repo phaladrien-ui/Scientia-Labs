@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
-import { auth } from "@/app/(auth)/auth";
 import { deleteAllChatsByUserId, getChatsByUserId } from "@/lib/db/queries";
 import { ChatbotError } from "@/lib/errors";
+import { authenticateRequest } from "@/lib/auth/api-helpers";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -20,14 +20,11 @@ export async function GET(request: NextRequest) {
     ).toResponse();
   }
 
-  const session = await auth();
-
-  if (!session?.user) {
-    return new ChatbotError("unauthorized:chat").toResponse();
-  }
+  const authResult = await authenticateRequest("history");
+  if (authResult.error) return authResult.error;
 
   const chats = await getChatsByUserId({
-    id: session.user.id,
+    id: authResult.session.user.id,
     limit,
     startingAfter,
     endingBefore,
@@ -37,13 +34,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function DELETE() {
-  const session = await auth();
+  const authResult = await authenticateRequest("chat");
+  if (authResult.error) return authResult.error;
 
-  if (!session?.user) {
-    return new ChatbotError("unauthorized:chat").toResponse();
-  }
-
-  const result = await deleteAllChatsByUserId({ userId: session.user.id });
+  const result = await deleteAllChatsByUserId({
+    userId: authResult.session.user.id,
+  });
 
   return Response.json(result, { status: 200 });
 }
