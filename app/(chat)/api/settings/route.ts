@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { auth } from "@/app/(auth)/auth";
 import {
   deleteAllChatsByUserId,
@@ -9,6 +10,13 @@ import {
   upsertUserSettings,
 } from "@/lib/db/queries";
 import { ChatbotError } from "@/lib/errors";
+
+const settingsPatchSchema = z.object({
+  name: z.string().max(100).optional(),
+  bio: z.string().max(500).optional(),
+  image: z.string().url().or(z.literal("")).optional(),
+  preferences: z.record(z.unknown()).optional(),
+});
 
 export async function GET() {
   const session = await auth();
@@ -47,8 +55,23 @@ export async function PATCH(request: Request) {
     return new ChatbotError("unauthorized:chat").toResponse();
   }
 
-  const body = await request.json();
-  const { name, bio, image, preferences } = body;
+  let name: string | undefined;
+  let bio: string | undefined;
+  let image: string | undefined;
+  let preferences: Record<string, unknown> | undefined;
+
+  try {
+    const parsed = settingsPatchSchema.parse(await request.json());
+    name = parsed.name;
+    bio = parsed.bio;
+    image = parsed.image;
+    preferences = parsed.preferences;
+  } catch {
+    return new ChatbotError(
+      "bad_request:api",
+      "Invalid request body."
+    ).toResponse();
+  }
 
   if (name !== undefined || bio !== undefined || image !== undefined) {
     await updateUserProfile({

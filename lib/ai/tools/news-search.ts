@@ -27,7 +27,7 @@ export const newsSearch = tool({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           query,
-          api_key: process.env.TAVILY_API_KEY || "tvly-dev-",
+          api_key: process.env.TAVILY_API_KEY ?? "",
           search_depth: "advanced",
           max_results: 8,
           topic: "news",
