@@ -53,7 +53,8 @@ export const maxDuration = 60;
 function getStreamContext() {
   try {
     return createResumableStreamContext({ waitUntil: after });
-  } catch (_) {
+  } catch (error) {
+    console.error("Failed to create resumable stream context:", error);
     return null;
   }
 }
@@ -364,8 +365,8 @@ export async function POST(request: Request) {
               () => sseStream
             );
           }
-        } catch (_) {
-          /* non-critical */
+        } catch (error) {
+          console.error("Failed to persist resumable stream:", error);
         }
       },
     });

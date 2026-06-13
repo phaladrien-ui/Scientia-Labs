@@ -48,6 +48,9 @@ export function useChatVisibility({
     updateChatVisibility({
       chatId,
       visibility: updatedVisibilityType,
+    }).catch((error) => {
+      console.error("Failed to update chat visibility:", error);
+      setLocalVisibility(localVisibility);
     });
   };
 

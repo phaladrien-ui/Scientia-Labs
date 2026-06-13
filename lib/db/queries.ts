@@ -581,7 +581,7 @@ export async function updateChatTitleById({
   try {
     return await db.update(chat).set({ title }).where(eq(chat.id, chatId));
   } catch (_error) {
-    return;
+    console.error("updateChatTitleById DB Error:", _error);
   }
 }
 
@@ -739,9 +739,7 @@ export async function deleteUserById({ userId }: { userId: string }) {
 
     if (userDocs.length > 0) {
       const docIds = userDocs.map((d) => d.id);
-      await db
-        .delete(suggestion)
-        .where(inArray(suggestion.documentId, docIds));
+      await db.delete(suggestion).where(inArray(suggestion.documentId, docIds));
       await db.delete(document).where(eq(document.userId, userId));
     }
 
@@ -817,9 +815,15 @@ export async function updateUserProfile({
 }) {
   try {
     const updates: Record<string, unknown> = { updatedAt: new Date() };
-    if (name !== undefined) updates.name = name;
-    if (bio !== undefined) updates.bio = bio;
-    if (image !== undefined) updates.image = image;
+    if (name !== undefined) {
+      updates.name = name;
+    }
+    if (bio !== undefined) {
+      updates.bio = bio;
+    }
+    if (image !== undefined) {
+      updates.image = image;
+    }
 
     return await db
       .update(user)

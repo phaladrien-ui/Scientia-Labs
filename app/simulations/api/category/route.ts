@@ -20,7 +20,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { category } = await request.json();
+  let category: string;
+  try {
+    const body = await request.json();
+    category = body.category;
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON in request body" },
+      { status: 400 }
+    );
+  }
+
+  if (!category || typeof category !== "string") {
+    return NextResponse.json(
+      { error: "Parameter 'category' is required" },
+      { status: 400 }
+    );
+  }
+
   await setUserCategory(session.user.id, category);
   return NextResponse.json({ success: true });
 }
