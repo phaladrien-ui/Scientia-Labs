@@ -29,14 +29,18 @@ export function CapabilitiesCarousel() {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    if (dismissed) return;
+    if (dismissed) {
+      return;
+    }
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % cards.length);
     }, 4000);
     return () => clearInterval(timer);
   }, [dismissed]);
 
-  if (dismissed) return null;
+  if (dismissed) {
+    return null;
+  }
 
   return (
     <div className="w-full max-w-md mx-auto mt-8 relative">

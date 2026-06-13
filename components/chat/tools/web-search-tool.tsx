@@ -64,7 +64,10 @@ export function WebSearchTool({ part }: { part: WebSearchPart }) {
 
     return (
       <div className="w-[min(100%,580px)]" key={toolCallId} ref={containerRef}>
-        <Tool className="w-full border-transparent shadow-none" defaultOpen={false}>
+        <Tool
+          className="w-full border-transparent shadow-none"
+          defaultOpen={false}
+        >
           <ToolHeader
             showBadge={false}
             state={state}

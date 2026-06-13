@@ -11,8 +11,11 @@ let client: ReturnType<typeof createClient> | null = null;
 function getClient() {
   if (!client && process.env.REDIS_URL) {
     client = createClient({ url: process.env.REDIS_URL });
-    client.on("error", () => undefined);
-    client.connect().catch(() => {
+    client.on("error", (err) => {
+      console.error("Redis client error:", err);
+    });
+    client.connect().catch((err) => {
+      console.error("Redis connection failed:", err);
       client = null;
     });
   }
@@ -44,5 +47,6 @@ export async function checkIpRateLimit(ip: string | undefined) {
     if (error instanceof ChatbotError) {
       throw error;
     }
+    console.error("Rate limit check failed:", error);
   }
 }

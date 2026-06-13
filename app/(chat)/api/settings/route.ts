@@ -47,8 +47,22 @@ export async function PATCH(request: Request) {
     return new ChatbotError("unauthorized:chat").toResponse();
   }
 
-  const body = await request.json();
-  const { name, bio, image, preferences } = body;
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return new ChatbotError(
+      "bad_request:api",
+      "Invalid JSON in request body."
+    ).toResponse();
+  }
+
+  const { name, bio, image, preferences } = body as {
+    name?: string;
+    bio?: string;
+    image?: string;
+    preferences?: Record<string, unknown>;
+  };
 
   if (name !== undefined || bio !== undefined || image !== undefined) {
     await updateUserProfile({

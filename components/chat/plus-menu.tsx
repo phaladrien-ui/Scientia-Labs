@@ -125,6 +125,8 @@ export function PlusMenu({
 }
 
 export function getModeLabel(mode: ModeType | null): string {
-  if (!mode) return "Agent";
+  if (!mode) {
+    return "Agent";
+  }
   return modeLabels[mode];
 }

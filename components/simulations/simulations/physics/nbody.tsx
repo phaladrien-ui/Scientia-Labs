@@ -320,9 +320,13 @@ export function SolarSystem({ isRunning }: { isRunning: boolean }) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      return;
+    }
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {
+      return;
+    }
 
     const dpr = window.devicePixelRatio || 1;
     canvas.width = W * dpr;
@@ -343,7 +347,9 @@ export function SolarSystem({ isRunning }: { isRunning: boolean }) {
       ctx!.fillRect(0, 0, W, H);
 
       drawStars(ctx!, starsRef.current);
-      if (showOrbitsRef.current) PLANETS.forEach((p) => drawOrbit(ctx!, p.a));
+      if (showOrbitsRef.current) {
+        PLANETS.forEach((p) => drawOrbit(ctx!, p.a));
+      }
       drawSun(ctx!);
 
       const s = speedRef.current;

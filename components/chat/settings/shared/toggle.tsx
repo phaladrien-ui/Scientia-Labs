@@ -16,12 +16,12 @@ export function Toggle({
 
   return (
     <button
-      type="button"
-      role="switch"
       aria-checked={checked}
       aria-label={label}
-      onClick={() => onChange(!checked)}
       className={`relative inline-flex h-6 w-10 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none ${activeClass}`}
+      onClick={() => onChange(!checked)}
+      role="switch"
+      type="button"
     >
       <span
         className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${dotClass}`}

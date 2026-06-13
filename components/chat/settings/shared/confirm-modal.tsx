@@ -24,17 +24,17 @@ export function ConfirmModal({
         </p>
         <div className="mt-5 flex gap-2 justify-end">
           <button
-            type="button"
-            onClick={onCancel}
             className="rounded-lg px-3.5 py-2 text-[16px] text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors"
+            onClick={onCancel}
+            type="button"
           >
             Cancel
           </button>
           <button
-            type="button"
-            onClick={onConfirm}
-            disabled={loading}
             className="rounded-lg bg-red-50 px-3.5 py-2 text-[16px] font-semibold text-red-600 hover:bg-red-100 disabled:opacity-30 transition-colors dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20"
+            disabled={loading}
+            onClick={onConfirm}
+            type="button"
           >
             {loading ? "Loading…" : confirmLabel}
           </button>

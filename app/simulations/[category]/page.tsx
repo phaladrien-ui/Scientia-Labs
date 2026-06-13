@@ -85,7 +85,7 @@ export default function CategoryPage() {
         </div>
         <span className="text-[12px] text-muted-foreground">
           {simulations.length} simulation
-          {simulations.length !== 1 ? "s" : ""}
+          {simulations.length === 1 ? "" : "s"}
         </span>
       </div>
 
