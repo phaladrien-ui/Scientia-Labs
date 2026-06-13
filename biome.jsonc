@@ -36,7 +36,8 @@
         "noNestedTernary": "off",
         "useConsistentTypeDefinitions": "off",
         "noNonNullAssertion": "off",
-        "useDefaultSwitchClause": "off"
+        "useDefaultSwitchClause": "off",
+        "noDescendingSpecificity": "off"
       },
       "nursery": {
         "useSortedClasses": "off"
