@@ -86,9 +86,13 @@ export const siteDocumentHandler = createDocumentHandler<"site">({
 
     const result = streamText({
       model,
-      system: `Modifie le site existant selon la demande. Réponds avec le JSON complet { html, css, js }`,
+      system:
+        "Modifie le site existant selon la demande. Réponds avec le JSON complet { html, css, js }",
       messages: [
-        { role: "user", content: `Site actuel: ${document.content}\nDemande: ${description}` },
+        {
+          role: "user",
+          content: `Site actuel: ${document.content}\nDemande: ${description}`,
+        },
       ],
       temperature: 0.2,
       maxOutputTokens: 4096,

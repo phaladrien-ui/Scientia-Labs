@@ -71,9 +71,13 @@ export function Waves({ isRunning }: { isRunning: boolean }) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      return;
+    }
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {
+      return;
+    }
 
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
@@ -137,10 +141,14 @@ export function Waves({ isRunning }: { isRunning: boolean }) {
 
           for (let dy = 0; dy < ph; dy++) {
             const gy = py0 + dy;
-            if (gy >= H) continue;
+            if (gy >= H) {
+              continue;
+            }
             for (let dx = 0; dx < pw; dx++) {
               const gx = px0 + dx;
-              if (gx >= W) continue;
+              if (gx >= W) {
+                continue;
+              }
               colorize(val, px, (gy * W + gx) * 4);
             }
           }
@@ -239,19 +247,25 @@ export function Waves({ isRunning }: { isRunning: boolean }) {
     }
 
     function animate() {
-      if (isRunning) step();
+      if (isRunning) {
+        step();
+      }
       draw();
       animFrameRef.current = requestAnimationFrame(animate);
     }
 
     animFrameRef.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animFrameRef.current);
-  }, [isRunning, colorMode]);
+  }, [isRunning]);
 
   function addSource(e: React.MouseEvent) {
-    if (e.detail !== 2) return;
+    if (e.detail !== 2) {
+      return;
+    }
     const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
+    if (!rect) {
+      return;
+    }
     const x = Math.floor(((e.clientX - rect.left) / rect.width) * SIZE);
     const y = Math.floor(((e.clientY - rect.top) / rect.height) * SIZE);
     setSources((prev) =>

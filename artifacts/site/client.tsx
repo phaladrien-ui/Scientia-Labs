@@ -29,7 +29,9 @@ const phaseLabels: Record<string, string> = {
 
 function ProgressInline({ data }: { data: SiteData }) {
   const currentPhase = data.phase || "html";
-  if (currentPhase === "done") return null;
+  if (currentPhase === "done") {
+    return null;
+  }
 
   const phaseOrder = ["html", "css", "js"];
   const currentIndex = phaseOrder.indexOf(currentPhase);
@@ -42,10 +44,10 @@ function ProgressInline({ data }: { data: SiteData }) {
 
         return (
           <div
-            key={phase}
             className={`flex items-center gap-2 text-sm ${
               isCurrent ? "text-foreground font-medium" : "text-green-500"
             }`}
+            key={phase}
           >
             <span className="text-xs">
               {isCurrent ? (
@@ -73,12 +75,12 @@ function TabButton({
 }) {
   return (
     <button
-      onClick={onClick}
       className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
         active
           ? "bg-primary text-primary-foreground"
           : "text-muted-foreground hover:text-foreground hover:bg-muted"
       }`}
+      onClick={onClick}
     >
       {children}
     </button>
@@ -94,7 +96,7 @@ function SitePreview({ html, css, js }: SiteData) {
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
   <style>body { margin: 0; background: #0a0a0a; } ${css}</style>
 </head>
-<body>${html}<script>${js}<\/script></body>
+<body>${html}<script>${js}</script></body>
 </html>`;
 
   return (
@@ -122,13 +124,17 @@ export const siteArtifact = new Artifact<"site", {}>({
     }
   },
   content: ({ content, status, isInline }) => {
-    const [tab, setTab] = useState<"preview" | "html" | "css" | "js">("preview");
+    const [tab, setTab] = useState<"preview" | "html" | "css" | "js">(
+      "preview"
+    );
     const data = parseSiteContent(content || "{}");
     const isDone = data.phase === "done";
 
     // Dans la conversation : progression textuelle
     if (isInline) {
-      if (isDone) return null;
+      if (isDone) {
+        return null;
+      }
       return <ProgressInline data={data} />;
     }
 
@@ -136,7 +142,10 @@ export const siteArtifact = new Artifact<"site", {}>({
     return (
       <div className="flex flex-col h-full">
         <div className="flex items-center gap-1 px-4 py-2 border-b border-border bg-muted/30">
-          <TabButton active={tab === "preview"} onClick={() => setTab("preview")}>
+          <TabButton
+            active={tab === "preview"}
+            onClick={() => setTab("preview")}
+          >
             Aperçu
           </TabButton>
           <TabButton active={tab === "html"} onClick={() => setTab("html")}>
@@ -151,7 +160,7 @@ export const siteArtifact = new Artifact<"site", {}>({
         </div>
         <div className="flex-1 overflow-hidden">
           {tab === "preview" ? (
-            <SitePreview html={data.html} css={data.css} js={data.js} />
+            <SitePreview css={data.css} html={data.html} js={data.js} />
           ) : (
             <pre className="h-full overflow-auto p-4 text-xs font-mono bg-muted/20 text-foreground whitespace-pre-wrap">
               {data[tab] || ""}

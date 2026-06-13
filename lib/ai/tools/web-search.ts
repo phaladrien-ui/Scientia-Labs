@@ -25,7 +25,9 @@ async function searchTavily(
       }),
     });
 
-    if (!response.ok) return { results: [], images: [] };
+    if (!response.ok) {
+      return { results: [], images: [] };
+    }
 
     const data = await response.json();
     const images: string[] = (data.images || []).map(
@@ -52,7 +54,9 @@ async function searchDuckDuckGo(query: string): Promise<SearchResult[]> {
       `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`
     );
 
-    if (!response.ok) return [];
+    if (!response.ok) {
+      return [];
+    }
 
     const data = await response.json();
     const results: SearchResult[] = (data.RelatedTopics || [])
@@ -89,7 +93,9 @@ function deduplicateResults(results: SearchResult[]): SearchResult[] {
   const seen = new Set<string>();
   return results.filter((r) => {
     const key = r.url.toLowerCase().replace(/\/$/, "");
-    if (seen.has(key)) return false;
+    if (seen.has(key)) {
+      return false;
+    }
     seen.add(key);
     return true;
   });

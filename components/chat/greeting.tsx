@@ -44,10 +44,15 @@ const timeBasedGreetings: Record<string, string[]> = {
 function getGreeting(): string {
   const hour = new Date().getHours();
   let timeKey: string;
-  if (hour >= 5 && hour < 12) timeKey = "morning";
-  else if (hour >= 12 && hour < 17) timeKey = "afternoon";
-  else if (hour >= 17 && hour < 22) timeKey = "evening";
-  else timeKey = "night";
+  if (hour >= 5 && hour < 12) {
+    timeKey = "morning";
+  } else if (hour >= 12 && hour < 17) {
+    timeKey = "afternoon";
+  } else if (hour >= 17 && hour < 22) {
+    timeKey = "evening";
+  } else {
+    timeKey = "night";
+  }
 
   // 1 chance sur 2 d'avoir un message basé sur l'heure
   if (Math.random() > 0.5) {

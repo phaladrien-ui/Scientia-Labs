@@ -234,7 +234,9 @@ function PureMultimodalInput({
     setAttachments([]);
     setLocalStorageInput("");
     setInput("");
-    if (width && width > 768) textareaRef.current?.focus();
+    if (width && width > 768) {
+      textareaRef.current?.focus();
+    }
   }, [
     input,
     setInput,
@@ -285,9 +287,13 @@ function PureMultimodalInput({
   const handlePaste = useCallback(
     async (e: ClipboardEvent) => {
       const items = e.clipboardData?.items;
-      if (!items) return;
+      if (!items) {
+        return;
+      }
       const imgs = Array.from(items).filter((i) => i.type.startsWith("image/"));
-      if (!imgs.length) return;
+      if (!imgs.length) {
+        return;
+      }
       e.preventDefault();
       setUploadQueue((p) => [...p, "Pasted image"]);
       try {
@@ -311,7 +317,9 @@ function PureMultimodalInput({
 
   useEffect(() => {
     const ta = textareaRef.current;
-    if (!ta) return;
+    if (!ta) {
+      return;
+    }
     ta.addEventListener("paste", handlePaste);
     return () => ta.removeEventListener("paste", handlePaste);
   }, [handlePaste]);
@@ -370,9 +378,14 @@ function PureMultimodalInput({
               return;
             }
           }
-          if (!input.trim() && attachments.length === 0) return;
-          if (status === "ready" || status === "error") submitForm();
-          else toast.error("Please wait for the model to finish its response!");
+          if (!input.trim() && attachments.length === 0) {
+            return;
+          }
+          if (status === "ready" || status === "error") {
+            submitForm();
+          } else {
+            toast.error("Please wait for the model to finish its response!");
+          }
         }}
       >
         {(attachments.length > 0 || uploadQueue.length > 0) && (
@@ -386,7 +399,9 @@ function PureMultimodalInput({
                 key={a.url}
                 onRemove={() => {
                   setAttachments((c) => c.filter((x) => x.url !== a.url));
-                  if (fileInputRef.current) fileInputRef.current.value = "";
+                  if (fileInputRef.current) {
+                    fileInputRef.current.value = "";
+                  }
                 }}
               />
             ))}
@@ -420,7 +435,9 @@ function PureMultimodalInput({
               }
               if (e.key === "Enter" || e.key === "Tab") {
                 e.preventDefault();
-                if (f[slashIndex]) handleSlashSelect(f[slashIndex]);
+                if (f[slashIndex]) {
+                  handleSlashSelect(f[slashIndex]);
+                }
                 return;
               }
               if (e.key === "Escape") {
@@ -540,15 +557,33 @@ function PureMultimodalInput({
 }
 
 export const MultimodalInput = memo(PureMultimodalInput, (prev, next) => {
-  if (prev.input !== next.input) return false;
-  if (prev.status !== next.status) return false;
-  if (!equal(prev.attachments, next.attachments)) return false;
-  if (prev.selectedVisibilityType !== next.selectedVisibilityType) return false;
-  if (prev.editingMessage !== next.editingMessage) return false;
-  if (prev.isLoading !== next.isLoading) return false;
-  if (prev.messages.length !== next.messages.length) return false;
-  if (prev.activeCategory !== next.activeCategory) return false;
-  if (prev.setActiveCategory !== next.setActiveCategory) return false;
+  if (prev.input !== next.input) {
+    return false;
+  }
+  if (prev.status !== next.status) {
+    return false;
+  }
+  if (!equal(prev.attachments, next.attachments)) {
+    return false;
+  }
+  if (prev.selectedVisibilityType !== next.selectedVisibilityType) {
+    return false;
+  }
+  if (prev.editingMessage !== next.editingMessage) {
+    return false;
+  }
+  if (prev.isLoading !== next.isLoading) {
+    return false;
+  }
+  if (prev.messages.length !== next.messages.length) {
+    return false;
+  }
+  if (prev.activeCategory !== next.activeCategory) {
+    return false;
+  }
+  if (prev.setActiveCategory !== next.setActiveCategory) {
+    return false;
+  }
   return true;
 });
 

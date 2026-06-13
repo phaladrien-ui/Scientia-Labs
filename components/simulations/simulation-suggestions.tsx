@@ -19,7 +19,9 @@ export function SimulationSuggestions({
     (s) => s.id !== currentId
   );
 
-  if (suggestions.length === 0) return null;
+  if (suggestions.length === 0) {
+    return null;
+  }
 
   return (
     <div className="border-t border-border/30 px-5 py-3">

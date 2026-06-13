@@ -33,8 +33,19 @@ export const createDocument = ({
     }),
     execute: async ({ title, kind }) => {
       // FORCER kind='site' si la demande est un site web
-      const siteKeywords = ["site", "landing page", "page web", "website", "landingpage", "créer un site", "créer une page", "web page"];
-      const isSiteRequest = siteKeywords.some((kw) => title.toLowerCase().includes(kw));
+      const siteKeywords = [
+        "site",
+        "landing page",
+        "page web",
+        "website",
+        "landingpage",
+        "créer un site",
+        "créer une page",
+        "web page",
+      ];
+      const isSiteRequest = siteKeywords.some((kw) =>
+        title.toLowerCase().includes(kw)
+      );
       const finalKind = isSiteRequest ? "site" : kind;
 
       const id = generateUUID();

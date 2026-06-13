@@ -117,11 +117,15 @@ export function Pendulum({ isRunning }: { isRunning: boolean }) {
   useEffect(() => {
     const mCvs = mainCvs.current;
     const pCvs = phaseCvs.current;
-    if (!mCvs || !pCvs) return;
+    if (!mCvs || !pCvs) {
+      return;
+    }
 
     const mCtx = mCvs.getContext("2d");
     const pCtx = pCvs.getContext("2d");
-    if (!mCtx || !pCtx) return;
+    if (!mCtx || !pCtx) {
+      return;
+    }
 
     const dpr = window.devicePixelRatio || 1;
 
@@ -318,7 +322,9 @@ export function Pendulum({ isRunning }: { isRunning: boolean }) {
       ctx.fillText("↑ ω", PW / 2 + 3, 11);
       ctx.restore();
 
-      if (pts.length < 2) return;
+      if (pts.length < 2) {
+        return;
+      }
 
       const thR = Math.PI * 1.2;
       const omR = Math.max(...pts.map((p) => Math.abs(p[1]))) * 1.2 || 3;
@@ -339,7 +345,7 @@ export function Pendulum({ isRunning }: { isRunning: boolean }) {
         ctx.lineWidth = 1.2;
         ctx.stroke();
       }
-      const last = pts[pts.length - 1];
+      const last = pts.at(-1);
       const lpx = PW / 2 + (last[0] / thR) * (PW / 2 - 8);
       const lpy = PH / 2 - (last[1] / omR) * (PH / 2 - 8);
       ctx.globalAlpha = 1;
@@ -355,7 +361,9 @@ export function Pendulum({ isRunning }: { isRunning: boolean }) {
     let frameCount = 0;
 
     const animate = (ts: number) => {
-      if (lastTsRef.current === null) lastTsRef.current = ts;
+      if (lastTsRef.current === null) {
+        lastTsRef.current = ts;
+      }
       const wallDt = Math.min((ts - lastTsRef.current) / 1000, 0.05);
       lastTsRef.current = ts;
 
@@ -373,9 +381,13 @@ export function Pendulum({ isRunning }: { isRunning: boolean }) {
         const bx = MCX() + c.L * Math.sin(s.theta);
         const by = PIVOT_Y + c.L * Math.cos(s.theta);
         trailRef.current.push({ x: bx, y: by });
-        if (trailRef.current.length > MAX_TRAIL) trailRef.current.shift();
+        if (trailRef.current.length > MAX_TRAIL) {
+          trailRef.current.shift();
+        }
         phaseRef.current.push([s.theta, s.omega]);
-        if (phaseRef.current.length > MAX_PHASE) phaseRef.current.shift();
+        if (phaseRef.current.length > MAX_PHASE) {
+          phaseRef.current.shift();
+        }
       }
 
       const bx = MCX() + c.L * Math.sin(s.theta);
@@ -387,17 +399,24 @@ export function Pendulum({ isRunning }: { isRunning: boolean }) {
       frameCount++;
       if (frameCount % 3 === 0) {
         const els = hudEls.current;
-        if (els.theta)
+        if (els.theta) {
           els.theta.textContent = `${((s.theta * 180) / Math.PI).toFixed(1)}°`;
-        if (els.omega) els.omega.textContent = `${s.omega.toFixed(2)} r/s`;
-        if (els.alpha)
+        }
+        if (els.omega) {
+          els.omega.textContent = `${s.omega.toFixed(2)} r/s`;
+        }
+        if (els.alpha) {
           els.alpha.textContent = `${computeAlpha(s.theta, s.omega, c.g, c.L, c.b).toFixed(2)} r/s²`;
-        if (els.ek)
+        }
+        if (els.ek) {
           els.ek.textContent = `${((0.5 * s.omega * s.omega * c.L * c.L) / 10_000).toFixed(3)} J`;
-        if (els.ep)
+        }
+        if (els.ep) {
           els.ep.textContent = `${((c.g * c.L * (1 - Math.cos(s.theta))) / 1000).toFixed(3)} J`;
-        if (els.period)
+        }
+        if (els.period) {
           els.period.textContent = `${computePeriod(c.L, c.g).toFixed(2)} s`;
+        }
       }
 
       rafRef.current = requestAnimationFrame(animate);
@@ -509,7 +528,9 @@ export function Pendulum({ isRunning }: { isRunning: boolean }) {
             <span
               className="ml-auto text-[11px] px-2 py-0.5 rounded bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 tabular-nums whitespace-nowrap"
               ref={(el) => {
-                if (el) hudEls.current[refKey] = el;
+                if (el) {
+                  hudEls.current[refKey] = el;
+                }
               }}
             />
           </div>
@@ -533,7 +554,9 @@ export function Pendulum({ isRunning }: { isRunning: boolean }) {
             <span
               className="font-medium"
               ref={(el) => {
-                if (el) hudEls.current[refKey] = el;
+                if (el) {
+                  hudEls.current[refKey] = el;
+                }
               }}
             />
           </div>

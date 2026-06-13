@@ -145,10 +145,18 @@ export async function updateSimulation(
 ): Promise<void> {
   try {
     const updates: Record<string, unknown> = { updatedAt: new Date() };
-    if (data.title !== undefined) updates.title = data.title;
-    if (data.parameters !== undefined) updates.parameters = data.parameters;
-    if (data.code !== undefined) updates.code = data.code;
-    if (data.isFavorite !== undefined) updates.isFavorite = data.isFavorite;
+    if (data.title !== undefined) {
+      updates.title = data.title;
+    }
+    if (data.parameters !== undefined) {
+      updates.parameters = data.parameters;
+    }
+    if (data.code !== undefined) {
+      updates.code = data.code;
+    }
+    if (data.isFavorite !== undefined) {
+      updates.isFavorite = data.isFavorite;
+    }
 
     await db.update(simulation).set(updates).where(eq(simulation.id, id));
   } catch (_error) {
@@ -191,7 +199,9 @@ export async function toggleFavorite(id: string): Promise<boolean> {
 
     return newValue;
   } catch (_error) {
-    if (_error instanceof ChatbotError) throw _error;
+    if (_error instanceof ChatbotError) {
+      throw _error;
+    }
     console.error("toggleFavorite DB Error:", _error);
     throw new ChatbotError("bad_request:database", "Failed to toggle favorite");
   }
