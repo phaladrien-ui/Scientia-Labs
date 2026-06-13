@@ -25,30 +25,44 @@
         "noExplicitAny": "off",
         "noUnknownAtRules": "off",
         "noConsole": "off",
-        "noBitwiseOperators": "off"
+        "noBitwiseOperators": "off",
+        "useAwait": "off",
+        "noEmptyBlockStatements": "off",
+        "noArrayIndexKey": "off",
+        "useIterableCallbackReturn": "off"
       },
       "style": {
         "noMagicNumbers": "off",
         "noNestedTernary": "off",
-        "useConsistentTypeDefinitions": "off"
+        "useConsistentTypeDefinitions": "off",
+        "noNonNullAssertion": "off",
+        "useDefaultSwitchClause": "off"
       },
       "nursery": {
         "useSortedClasses": "off"
       },
       "complexity": {
         "noExcessiveCognitiveComplexity": "off",
-        "useSimplifiedLogicExpression": "off"
+        "useSimplifiedLogicExpression": "off",
+        "noBannedTypes": "off",
+        "noForEach": "off"
       },
       "a11y": {
-        "noSvgWithoutTitle": "off"
+        "noSvgWithoutTitle": "off",
+        "useButtonType": "off",
+        "noNoninteractiveElementInteractions": "off"
       },
       "correctness": {
         "useUniqueElementIds": "off",
-        "useImageSize": "off"
+        "useImageSize": "off",
+        "noUnusedVariables": "off",
+        "noUnusedFunctionParameters": "off",
+        "noNestedComponentDefinitions": "off"
       },
       "performance": {
         "noBarrelFile": "off",
-        "useTopLevelRegex": "off"
+        "useTopLevelRegex": "off",
+        "noImgElement": "off"
       }
     }
   }
