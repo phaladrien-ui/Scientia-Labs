@@ -1,7 +1,10 @@
 import { z } from "zod";
-import { auth } from "@/app/(auth)/auth";
-import { getChatById, getVotesByChatId, voteMessage } from "@/lib/db/queries";
+import { getVotesByChatId, voteMessage } from "@/lib/db/queries";
 import { ChatbotError } from "@/lib/errors";
+import {
+  authenticateRequest,
+  authorizeChatAccess,
+} from "@/lib/auth/api-helpers";
 
 const voteSchema = z.object({
   chatId: z.string(),
@@ -20,21 +23,15 @@ export async function GET(request: Request) {
     ).toResponse();
   }
 
-  const session = await auth();
+  const authResult = await authenticateRequest("vote");
+  if (authResult.error) return authResult.error;
 
-  if (!session?.user) {
-    return new ChatbotError("unauthorized:vote").toResponse();
-  }
-
-  const chat = await getChatById({ id: chatId });
-
-  if (!chat) {
-    return new ChatbotError("not_found:chat").toResponse();
-  }
-
-  if (chat.userId !== session.user.id) {
-    return new ChatbotError("forbidden:vote").toResponse();
-  }
+  const chatResult = await authorizeChatAccess(
+    chatId,
+    authResult.session.user.id,
+    "vote"
+  );
+  if (chatResult.error) return chatResult.error;
 
   const votes = await getVotesByChatId({ id: chatId });
 
@@ -58,21 +55,15 @@ export async function PATCH(request: Request) {
     ).toResponse();
   }
 
-  const session = await auth();
+  const authResult = await authenticateRequest("vote");
+  if (authResult.error) return authResult.error;
 
-  if (!session?.user) {
-    return new ChatbotError("unauthorized:vote").toResponse();
-  }
-
-  const chat = await getChatById({ id: chatId });
-
-  if (!chat) {
-    return new ChatbotError("not_found:vote").toResponse();
-  }
-
-  if (chat.userId !== session.user.id) {
-    return new ChatbotError("forbidden:vote").toResponse();
-  }
+  const chatResult = await authorizeChatAccess(
+    chatId,
+    authResult.session.user.id,
+    "vote"
+  );
+  if (chatResult.error) return chatResult.error;
 
   await voteMessage({
     chatId,

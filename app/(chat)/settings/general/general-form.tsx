@@ -15,9 +15,11 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useRef, useState } from "react";
 import { Card } from "@/components/chat/settings/shared/card";
+import { CardHeader } from "@/components/chat/settings/shared/card-header";
 import { Row } from "@/components/chat/settings/shared/row";
 import { SectionLabel } from "@/components/chat/settings/shared/section-label";
 import { useIntl } from "@/components/intl-provider";
+import { useSavePreferences } from "@/hooks/use-save-preferences";
 
 function formatTimezoneLabel(tz: string): string {
   const offset =
@@ -89,6 +91,7 @@ export function GeneralForm({
   };
 }) {
   const router = useRouter();
+  const savePrefs = useSavePreferences();
   const { setTheme, theme } = useTheme();
   const { formatDate, locale, timezone } = useIntl();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -100,19 +103,6 @@ export function GeneralForm({
   const [isUploading, setIsUploading] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [name, setName] = useState(user.name ?? "");
-
-  async function savePrefs(data: Record<string, unknown>) {
-    try {
-      await fetch("/api/settings", {
-        body: JSON.stringify({ preferences: data }),
-        headers: { "Content-Type": "application/json" },
-        method: "PATCH",
-      });
-      router.refresh();
-    } catch (err) {
-      console.error("Save failed:", err);
-    }
-  }
 
   async function saveProfile(fields: {
     bio?: string;
@@ -158,14 +148,7 @@ export function GeneralForm({
 
       {/* Profile */}
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Profile
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Your photo, name, and bio.
-          </p>
-        </div>
+        <CardHeader title="Profile" description="Your photo, name, and bio." />
         <div className="px-5 py-5">
           <div className="flex items-start gap-5">
             <div className="shrink-0">
@@ -330,14 +313,10 @@ export function GeneralForm({
 
       {/* Localization */}
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Localization
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Detected from your system.
-          </p>
-        </div>
+        <CardHeader
+          title="Localization"
+          description="Detected from your system."
+        />
         <Row
           icon={Globe}
           label="Language"
@@ -354,14 +333,10 @@ export function GeneralForm({
 
       {/* Appearance */}
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Appearance
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Choose how Orion looks.
-          </p>
-        </div>
+        <CardHeader
+          title="Appearance"
+          description="Choose how Orion looks."
+        />
         <Row
           action={
             <select

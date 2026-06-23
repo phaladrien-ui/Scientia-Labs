@@ -11,12 +11,13 @@ import {
   Shield,
   Trash2,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Card } from "@/components/chat/settings/shared/card";
+import { CardHeader } from "@/components/chat/settings/shared/card-header";
 import { Row } from "@/components/chat/settings/shared/row";
 import { SectionLabel } from "@/components/chat/settings/shared/section-label";
 import { Toggle } from "@/components/chat/settings/shared/toggle";
+import { useSavePreferences } from "@/hooks/use-save-preferences";
 
 const MOCK_SESSIONS = [
   {
@@ -100,7 +101,7 @@ export function SecurityForm({
   userId: string;
   initialPreferences: Record<string, unknown>;
 }) {
-  const router = useRouter();
+  const save = useSavePreferences();
 
   const [twoFactor, setTwoFactor] = useState(
     (initialPreferences.twoFactor as boolean) ?? false
@@ -113,19 +114,6 @@ export function SecurityForm({
   );
   const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
   const [newIp, setNewIp] = useState("");
-
-  async function save(data: Record<string, unknown>) {
-    try {
-      await fetch("/api/settings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ preferences: data }),
-      });
-      router.refresh();
-    } catch (err) {
-      console.error("Save failed:", err);
-    }
-  }
 
   function addIp() {
     if (!newIp.trim()) {
@@ -160,14 +148,10 @@ export function SecurityForm({
       <SectionLabel>Security</SectionLabel>
 
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Authentication
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Protect your account with additional security layers.
-          </p>
-        </div>
+        <CardHeader
+          title="Authentication"
+          description="Protect your account with additional security layers."
+        />
         <Row
           action={
             <Toggle
@@ -248,14 +232,10 @@ export function SecurityForm({
       </Card>
 
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Active sessions
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Manage devices currently connected to your account.
-          </p>
-        </div>
+        <CardHeader
+          title="Active sessions"
+          description="Manage devices currently connected to your account."
+        />
         {MOCK_SESSIONS.map((session) => (
           <Row
             action={
@@ -351,14 +331,10 @@ export function SecurityForm({
       </Card>
 
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Audit logs
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Recent activity on your account.
-          </p>
-        </div>
+        <CardHeader
+          title="Audit logs"
+          description="Recent activity on your account."
+        />
         {MOCK_AUDIT_LOGS.map((log) => (
           <Row
             icon={Clock}

@@ -8,20 +8,21 @@ import {
   RefreshCw,
   Shrink,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Card } from "@/components/chat/settings/shared/card";
+import { CardHeader } from "@/components/chat/settings/shared/card-header";
 import { Row } from "@/components/chat/settings/shared/row";
 import { SectionLabel } from "@/components/chat/settings/shared/section-label";
 import { Toggle } from "@/components/chat/settings/shared/toggle";
 import { UsageBar } from "@/components/chat/settings/shared/usage-bar";
+import { useSavePreferences } from "@/hooks/use-save-preferences";
 
 export function MemoryForm({
   initialPreferences,
 }: {
   initialPreferences: Record<string, unknown>;
 }) {
-  const router = useRouter();
+  const save = useSavePreferences();
 
   const [shortTerm, setShortTerm] = useState(
     (initialPreferences.shortTerm as boolean) ?? true
@@ -50,19 +51,6 @@ export function MemoryForm({
   const [memoryUsed] = useState(128);
   const [memoryCapacity] = useState(512);
 
-  async function save(data: Record<string, unknown>) {
-    try {
-      await fetch("/api/settings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ preferences: data }),
-      });
-      router.refresh();
-    } catch (err) {
-      console.error("Save failed:", err);
-    }
-  }
-
   const prefs = {
     shortTerm,
     shortTermLimit,
@@ -79,14 +67,10 @@ export function MemoryForm({
       <SectionLabel>Memory System</SectionLabel>
 
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Memory usage
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Current memory consumption across all layers.
-          </p>
-        </div>
+        <CardHeader
+          title="Memory usage"
+          description="Current memory consumption across all layers."
+        />
         <div className="p-5 space-y-4">
           <UsageBar
             label="Total memory"
@@ -115,14 +99,10 @@ export function MemoryForm({
       </Card>
 
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Memory layers
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Configure how Orion stores and retrieves context.
-          </p>
-        </div>
+        <CardHeader
+          title="Memory layers"
+          description="Configure how Orion stores and retrieves context."
+        />
         <Row
           action={
             <Toggle
@@ -171,14 +151,10 @@ export function MemoryForm({
       </Card>
 
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Compression & limits
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Control memory usage and retention policies.
-          </p>
-        </div>
+        <CardHeader
+          title="Compression & limits"
+          description="Control memory usage and retention policies."
+        />
         <Row
           action={
             <Toggle
@@ -261,14 +237,10 @@ export function MemoryForm({
       </Card>
 
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Short-term memory limit
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Maximum number of messages kept in short-term context.
-          </p>
-        </div>
+        <CardHeader
+          title="Short-term memory limit"
+          description="Maximum number of messages kept in short-term context."
+        />
         <div className="p-5">
           <div className="flex items-center gap-3">
             <span className="text-[14px] text-neutral-600 dark:text-neutral-400">

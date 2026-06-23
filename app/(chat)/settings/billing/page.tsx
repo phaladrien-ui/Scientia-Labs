@@ -1,12 +1,10 @@
-import { auth } from "@/app/(auth)/auth";
-import { getUserSettings, getUserStats } from "@/lib/db/queries";
+import { getUserStats } from "@/lib/db/queries";
+import { getSettingsPageData } from "@/lib/settings/get-settings-page-data";
 import { BillingForm } from "./billing-form";
 
 export default async function BillingPage() {
-  const session = await auth();
-  const settings = await getUserSettings({ userId: session?.user?.id ?? "" });
+  const { session, prefs } = await getSettingsPageData();
   const stats = await getUserStats({ userId: session?.user?.id ?? "" });
-  const prefs = (settings?.preferences ?? {}) as Record<string, unknown>;
 
   return <BillingForm stats={stats} initialPreferences={prefs} />;
 }

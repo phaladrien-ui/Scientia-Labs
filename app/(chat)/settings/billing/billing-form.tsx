@@ -9,12 +9,13 @@ import {
   TrendingUp,
   Zap,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Card } from "@/components/chat/settings/shared/card";
+import { CardHeader } from "@/components/chat/settings/shared/card-header";
 import { Row } from "@/components/chat/settings/shared/row";
 import { SectionLabel } from "@/components/chat/settings/shared/section-label";
 import { UsageBar } from "@/components/chat/settings/shared/usage-bar";
+import { useSavePreferences } from "@/hooks/use-save-preferences";
 
 function formatNumber(n: number): string {
   return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -38,7 +39,7 @@ export function BillingForm({
   };
   initialPreferences: Record<string, unknown>;
 }) {
-  const router = useRouter();
+  const save = useSavePreferences();
 
   const [spendingLimit, setSpendingLimit] = useState(
     (initialPreferences.spendingLimit as number) ?? 100
@@ -52,19 +53,6 @@ export function BillingForm({
   const estimatedCost = (tokensThisMonth / 1000) * 0.02;
   const storageUsed = 128;
   const storageLimit = 1024;
-
-  async function save(data: Record<string, unknown>) {
-    try {
-      await fetch("/api/settings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ preferences: data }),
-      });
-      router.refresh();
-    } catch (err) {
-      console.error("Save failed:", err);
-    }
-  }
 
   return (
     <div className="space-y-8">
@@ -112,14 +100,10 @@ export function BillingForm({
       </div>
 
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Monthly consumption
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Track your token and storage usage.
-          </p>
-        </div>
+        <CardHeader
+          title="Monthly consumption"
+          description="Track your token and storage usage."
+        />
         <div className="p-5 space-y-4">
           <UsageBar
             label="Tokens consumed"
@@ -136,14 +120,10 @@ export function BillingForm({
       </Card>
 
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Cost breakdown
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Estimated costs by service.
-          </p>
-        </div>
+        <CardHeader
+          title="Cost breakdown"
+          description="Estimated costs by service."
+        />
         <Row
           action={
             <span className="text-[14px] font-medium text-neutral-900 dark:text-neutral-100">
@@ -188,14 +168,10 @@ export function BillingForm({
       </Card>
 
       <Card>
-        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Spending controls
-          </h3>
-          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Set limits and alerts to control costs.
-          </p>
-        </div>
+        <CardHeader
+          title="Spending controls"
+          description="Set limits and alerts to control costs."
+        />
         <div className="p-5 space-y-4">
           <div className="flex items-center gap-3">
             <DollarSign className="size-4 text-neutral-400 shrink-0" />
