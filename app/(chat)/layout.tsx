@@ -7,6 +7,7 @@ import { AppSidebar } from "@/components/chat/app-sidebar";
 import { DataStreamProvider } from "@/components/chat/data-stream-provider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { auth } from "../(auth)/auth";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -32,7 +33,8 @@ async function SidebarShell({ children }: { children: React.ReactNode }) {
     <SidebarProvider defaultOpen={!isCollapsed}>
       <AppSidebar user={session?.user} />
       <SidebarInset>
-        <Toaster
+        <TooltipProvider>
+          <Toaster
           position="top-center"
           theme="system"
           toastOptions={{
@@ -41,6 +43,7 @@ async function SidebarShell({ children }: { children: React.ReactNode }) {
           }}
         />
         {children}
+        </TooltipProvider>
       </SidebarInset>
     </SidebarProvider>
   );

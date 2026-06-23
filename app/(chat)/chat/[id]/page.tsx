@@ -1,10 +1,11 @@
-import { ChatShell } from "@/components/chat/chat-shell";
+// app/(chat)/chat/[id]/page.tsx
+import { ChatShellChat } from "@/components/chat/chat-shell";
 import { ActiveChatProvider } from "@/hooks/use-active-chat";
 
 export default function Page() {
   return (
     <ActiveChatProvider>
-      <ChatShell />
+      <ChatShellChat />
     </ActiveChatProvider>
   );
 }

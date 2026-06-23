@@ -1,3 +1,4 @@
+// lib/db/queries.ts
 import "server-only";
 
 import {
@@ -34,7 +35,12 @@ import {
 } from "./schema";
 import { generateHashedPassword } from "./utils";
 
-const client = postgres(process.env.POSTGRES_URL ?? "");
+const client = postgres(process.env.POSTGRES_URL ?? "", {
+  max: 10,
+  idle_timeout: 30,
+  connect_timeout: 10,
+  keep_alive: 1,
+});
 const db = drizzle(client);
 
 export async function getUser(email: string): Promise<User[]> {
@@ -330,7 +336,6 @@ export async function getVotesByChatId({ id }: { id: string }) {
   }
 }
 
-// CORRECTION ICI - Fonction saveDocument avec cast du kind
 export async function saveDocument({
   id,
   title,
@@ -657,8 +662,6 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
     );
   }
 }
-
-// ─── Settings ─────────────────────────────────────────────────
 
 export async function getUserStats({ userId }: { userId: string }) {
   try {

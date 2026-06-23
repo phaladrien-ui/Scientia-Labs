@@ -1,11 +1,11 @@
 // app/(chat)/websites/chat/[id]/page.tsx
-import { ChatShell } from "@/components/chat/chat-shell";
+import { ChatShellWebsites } from "@/components/chat/website-shell";
 import { ActiveChatProvider } from "@/hooks/use-active-chat";
 
 export default function WebsiteChatPage() {
   return (
     <ActiveChatProvider key="websites">
-      <ChatShell key="websites" />
+      <ChatShellWebsites key="websites" />
     </ActiveChatProvider>
   );
 }
