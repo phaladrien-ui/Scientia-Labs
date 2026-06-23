@@ -1,4 +1,5 @@
 // lib/types.ts
+
 import type { InferUITool, UIMessage } from "ai";
 import { z } from "zod";
 import type { ArtifactKind } from "@/components/chat/artifact";
@@ -61,3 +62,4 @@ export type Attachment = {
   url: string;
   contentType: string;
 };
+
