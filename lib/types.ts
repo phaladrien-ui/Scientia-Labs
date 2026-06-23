@@ -62,4 +62,3 @@ export type Attachment = {
   url: string;
   contentType: string;
 };
-

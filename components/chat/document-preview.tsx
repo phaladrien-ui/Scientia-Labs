@@ -75,7 +75,6 @@ function SiteProgressInline({ content }: { content: string }) {
 
         return (
           <div
-            key={phase}
             className={`flex items-center gap-2 text-sm ${
               done
                 ? "text-green-500"
@@ -83,6 +82,7 @@ function SiteProgressInline({ content }: { content: string }) {
                   ? "text-foreground font-medium"
                   : "text-muted-foreground/50"
             }`}
+            key={phase}
           >
             <span className="w-4 text-center text-xs">
               {done ? "✓" : active ? "●" : "○"}
@@ -90,7 +90,9 @@ function SiteProgressInline({ content }: { content: string }) {
             <span>{phaseLabels[phase]}</span>
             {active && !done && phase !== "done" && (
               <span className="text-xs text-muted-foreground animate-pulse ml-auto">
-                {phase === "html" && data.html ? `${data.html.length} car.` : ""}
+                {phase === "html" && data.html
+                  ? `${data.html.length} car.`
+                  : ""}
                 {phase === "css" && data.css ? `${data.css.length} car.` : ""}
                 {phase === "js" && data.js ? `${data.js.length} car.` : ""}
               </span>

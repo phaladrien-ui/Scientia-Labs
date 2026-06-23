@@ -739,9 +739,7 @@ export async function deleteUserById({ userId }: { userId: string }) {
 
     if (userDocs.length > 0) {
       const docIds = userDocs.map((d) => d.id);
-      await db
-        .delete(suggestion)
-        .where(inArray(suggestion.documentId, docIds));
+      await db.delete(suggestion).where(inArray(suggestion.documentId, docIds));
       await db.delete(document).where(eq(document.userId, userId));
     }
 

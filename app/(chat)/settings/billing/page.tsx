@@ -8,5 +8,5 @@ export default async function BillingPage() {
   const stats = await getUserStats({ userId: session?.user?.id ?? "" });
   const prefs = (settings?.preferences ?? {}) as Record<string, unknown>;
 
-  return <BillingForm stats={stats} initialPreferences={prefs} />;
+  return <BillingForm initialPreferences={prefs} stats={stats} />;
 }

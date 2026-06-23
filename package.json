@@ -107,14 +107,16 @@
   },
   "packageManager": "pnpm@10.32.1",
   "pnpm": {
-  "overrides": {
-    "next-auth": "5.0.0-beta.25"
-  },
-  "peerDependencyRules": {
-    "ignoreMissing": ["next"],
-    "allowedVersions": {
-      "next": "16.2.0"
+    "overrides": {
+      "next-auth": "5.0.0-beta.25"
+    },
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "next"
+      ],
+      "allowedVersions": {
+        "next": "16.2.0"
+      }
     }
   }
-}
 }

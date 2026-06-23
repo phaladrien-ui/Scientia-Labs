@@ -33,7 +33,6 @@
         "useConsistentTypeDefinitions": "off"
       },
       "nursery": {
-        
         "useSortedClasses": "off"
       },
       "complexity": {

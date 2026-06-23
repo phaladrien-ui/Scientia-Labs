@@ -4,8 +4,8 @@ import {
   ToolHeader,
   ToolInput,
 } from "@/components/ai-elements/tool";
-import { Weather } from "../weather";
 import type { WeatherAtLocation } from "../weather";
+import { Weather } from "../weather";
 
 type WeatherPart = {
   toolCallId: string;
@@ -36,7 +36,9 @@ export function WeatherTool({
   if (state === "output-available") {
     return (
       <div className={widthClass} key={toolCallId}>
-        <Weather weatherAtLocation={part.output as WeatherAtLocation | undefined} />
+        <Weather
+          weatherAtLocation={part.output as WeatherAtLocation | undefined}
+        />
       </div>
     );
   }

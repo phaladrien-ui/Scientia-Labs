@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { auth } from "@/app/(auth)/auth";
-import { SettingsNav } from "@/components/chat/settings/settings-nav";
 import { SettingsCloseButton } from "@/components/chat/settings/settings-close-button";
+import { SettingsNav } from "@/components/chat/settings/settings-nav";
 
 export default async function SettingsLayout({
   children,
@@ -36,7 +36,11 @@ export default async function SettingsLayout({
         {/* Detail — Contenu */}
         <div className="flex-1 overflow-y-auto p-14">
           <div className="max-w-4xl mx-auto">
-            <Suspense fallback={<div className="flex h-full items-center justify-center" />}>
+            <Suspense
+              fallback={
+                <div className="flex h-full items-center justify-center" />
+              }
+            >
               {children}
             </Suspense>
           </div>

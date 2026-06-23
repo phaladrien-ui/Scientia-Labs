@@ -281,7 +281,11 @@ function PureArtifact({
   }
 
   useEffect(() => {
-    if (artifact.documentId !== "init" && 'initialize' in artifactDefinition && artifactDefinition.initialize) {
+    if (
+      artifact.documentId !== "init" &&
+      "initialize" in artifactDefinition &&
+      artifactDefinition.initialize
+    ) {
       artifactDefinition.initialize({
         documentId: artifact.documentId,
         setMetadata,

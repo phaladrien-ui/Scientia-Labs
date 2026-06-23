@@ -1,7 +1,6 @@
-// components/chat/shell.tsx
+// components/chat/website-shell.tsx
 "use client";
 
-import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   AlertDialog,
@@ -21,7 +20,6 @@ import {
 } from "@/hooks/use-artifact";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import { Artifact } from "./artifact";
-import { CapabilitiesCarousel } from "./capabilities-carousel";
 import { ChatHeader } from "./chat-header";
 import { DataStreamHandler } from "./data-stream-handler";
 import { InspirationGallery } from "./inspiration-gallery";
@@ -30,7 +28,7 @@ import { Messages } from "./messages";
 import { MultimodalInput } from "./multimodal-input";
 import { SearchArtifactPanel } from "./search-artifact-panel";
 
-export function ChatShell() {
+export function ChatShellWebsites() {
   const {
     chatId,
     messages,
@@ -59,21 +57,6 @@ export function ChatShell() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
   const { artifact, setArtifact } = useArtifact();
-
-  const pathname = usePathname();
-  const isWebsites = pathname.startsWith("/websites");
-
-  const prevIsWebsitesRef = useRef(isWebsites);
-  useEffect(() => {
-    if (prevIsWebsitesRef.current !== isWebsites) {
-      prevIsWebsitesRef.current = isWebsites;
-      setArtifact(initialArtifactData);
-      setEditingMessage(null);
-      setAttachments([]);
-      setInput("");
-      setActiveCategory(null);
-    }
-  }, [isWebsites, setArtifact, setInput]);
 
   const stopRef = useRef(stop);
   stopRef.current = stop;
@@ -110,7 +93,7 @@ export function ChatShell() {
               isArtifactVisible={isArtifactVisible}
               isLoading={isLoading}
               isReadonly={isReadonly}
-              isWebsites={isWebsites}
+              isWebsites={true}
               messages={messages}
               onEditMessage={(msg) => {
                 const text = msg.parts
@@ -139,7 +122,7 @@ export function ChatShell() {
                   editingMessage={editingMessage}
                   input={input}
                   isLoading={isLoading}
-                  isWebsites={isWebsites}
+                  isWebsites={true}
                   messages={messages}
                   onCancelEdit={() => {
                     setEditingMessage(null);
@@ -171,10 +154,7 @@ export function ChatShell() {
                   stop={stop}
                 />
               )}
-              {!isWebsites && messages.length === 0 && !isLoading && (
-                <CapabilitiesCarousel />
-              )}
-              {isWebsites && messages.length === 0 && !isLoading && (
+              {messages.length === 0 && !isLoading && (
                 <InspirationGallery />
               )}
             </div>
