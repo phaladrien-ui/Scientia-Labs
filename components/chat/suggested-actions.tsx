@@ -3,7 +3,7 @@
 
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { motion } from "framer-motion";
-import { memo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { suggestions } from "@/lib/constants";
 import type { ChatMessage } from "@/lib/types";
@@ -24,7 +24,12 @@ function PureSuggestedActions({
   const t = useTranslations("chat");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const category = suggestions.find((s) => s.label === activeCategory);
-  const activePrompts = category?.prompts || [];
+
+  const promptKeys = useMemo(() => {
+    if (!category) return [];
+    const label = category.label.toLowerCase();
+    return [1, 2, 3, 4].map((n) => `${label}Prompt${n}`);
+  }, [category]);
 
   const updateCategory = (cat: string | null) => {
     setActiveCategory(cat);
@@ -41,10 +46,10 @@ function PureSuggestedActions({
             className="flex flex-col items-start gap-1"
             initial={{ opacity: 0 }}
           >
-            {activePrompts.slice(0, 4).map((prompt) => (
+            {promptKeys.map((key) => (
               <button
                 className="flex items-center gap-2.5 w-full rounded-lg px-3 py-2.5 text-[13px] text-black dark:text-white/90 transition-all hover:bg-card/40"
-                key={prompt}
+                key={key}
                 onClick={() => {
                   window.history.pushState(
                     {},
@@ -53,7 +58,7 @@ function PureSuggestedActions({
                   );
                   sendMessage({
                     role: "user",
-                    parts: [{ type: "text", text: prompt }],
+                    parts: [{ type: "text", text: t(key) }],
                   });
                 }}
                 type="button"
@@ -61,7 +66,7 @@ function PureSuggestedActions({
                 <span className="text-black/60 dark:text-white/60">
                   <category.icon className="size-3.5" />
                 </span>
-                <span className="text-left">{prompt}</span>
+                <span className="text-left">{t(key)}</span>
               </button>
             ))}
             <button

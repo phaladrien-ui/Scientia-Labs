@@ -37,12 +37,12 @@ import {
 } from "../ai-elements/prompt-input";
 import { Button } from "../ui/button";
 import { StopIcon } from "./icons";
-import { getModeLabel, type ModeType, PlusMenu } from "./plus-menu";
+import { type ModeType, PlusMenu } from "./plus-menu";
 import { PreviewAttachment } from "./preview-attachment";
 import {
   type SlashCommand,
   SlashCommandMenu,
-  slashCommands,
+  useSlashCommands,
 } from "./slash-commands";
 import { SuggestedActions } from "./suggested-actions";
 import { SuggestedActionsWebsites } from "./suggested-actions-websites";
@@ -109,6 +109,7 @@ function PureMultimodalInput({
   const [modelMenuOpen, setModelMenuOpen] = useState(false);
   const { modeRef } = useActiveChat();
   const t = useTranslations("chat");
+  const slashCommands = useSlashCommands();
 
   useEffect(() => {
     modeRef.current = mode;
@@ -317,7 +318,7 @@ function PureMultimodalInput({
     : isWebsites
       ? t("describeWebsite")
       : activeCategory
-        ? t("askAnything")
+        ? t(`${activeCategory.toLowerCase()}Placeholder`) || t("askAnything")
         : t("askAnything");
 
   return (
@@ -348,6 +349,7 @@ function PureMultimodalInput({
       <div className="relative">
         {slashOpen && (
           <SlashCommandMenu
+            commands={slashCommands}
             onClose={() => setSlashOpen(false)}
             onSelect={handleSlashSelect}
             query={slashQuery}
@@ -448,7 +450,7 @@ function PureMultimodalInput({
               variant="ghost"
             >
               <BotIcon className="size-3.5" />
-              {getModeLabel(mode)}
+              {mode ? `Agent · ${t(mode)}` : "Agent"}
             </Button>
           </PromptInputTools>
           <div className="flex items-center gap-2">

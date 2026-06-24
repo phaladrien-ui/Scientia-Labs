@@ -1,6 +1,7 @@
 // components/chat/chat-shell.tsx
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   AlertDialog,
@@ -55,6 +56,7 @@ export function ChatShellChat() {
   );
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [carouselDismissed, setCarouselDismissed] = useState(false);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
   const { artifact, setArtifact } = useArtifact();
 
@@ -70,6 +72,7 @@ export function ChatShellChat() {
       setEditingMessage(null);
       setAttachments([]);
       setActiveCategory(null);
+      setCarouselDismissed(false);
     }
   }, [chatId, setArtifact]);
 
@@ -181,9 +184,9 @@ export function ChatShellChat() {
         )}
       </div>
       <DataStreamHandler />
-      {messages.length === 0 && !isLoading && (
-        <div className="fixed bottom-4 left-0 right-0 z-10 pointer-events-none">
-          <CapabilitiesCarousel />
+      {!carouselDismissed && messages.length === 0 && !isLoading && (
+        <div className="fixed bottom-4 left-0 right-0 z-10">
+          <CapabilitiesCarousel onDismiss={() => setCarouselDismissed(true)} />
         </div>
       )}
       <AlertDialog

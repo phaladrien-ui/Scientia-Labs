@@ -1,3 +1,4 @@
+// components/chat/slash-commands.tsx
 "use client";
 
 import {
@@ -10,6 +11,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { type ReactNode, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 export type SlashCommand = {
@@ -20,53 +22,58 @@ export type SlashCommand = {
   shortcut?: string;
 };
 
-export const slashCommands: SlashCommand[] = [
-  {
-    name: "new",
-    description: "Start a new chat",
-    icon: <PenSquareIcon className="size-3.5" />,
-    action: "new",
-  },
-  {
-    name: "clear",
-    description: "Clear current chat",
-    icon: <Trash2Icon className="size-3.5" />,
-    action: "clear",
-  },
-  {
-    name: "rename",
-    description: "Rename current chat",
-    icon: <PenLineIcon className="size-3.5" />,
-    action: "rename",
-  },
-  {
-    name: "model",
-    description: "Change the AI model",
-    icon: <ListIcon className="size-3.5" />,
-    action: "model",
-  },
-  {
-    name: "theme",
-    description: "Toggle dark/light mode",
-    icon: <PaletteIcon className="size-3.5" />,
-    action: "theme",
-  },
-  {
-    name: "delete",
-    description: "Delete current chat",
-    icon: <XIcon className="size-3.5" />,
-    action: "delete",
-  },
-  {
-    name: "purge",
-    description: "Delete all chats",
-    icon: <BombIcon className="size-3.5" />,
-    action: "purge",
-  },
-];
+export function useSlashCommands(): SlashCommand[] {
+  const t = useTranslations("chat");
+
+  return [
+    {
+      name: "new",
+      description: t("slashNew"),
+      icon: <PenSquareIcon className="size-3.5" />,
+      action: "new",
+    },
+    {
+      name: "clear",
+      description: t("slashClear"),
+      icon: <Trash2Icon className="size-3.5" />,
+      action: "clear",
+    },
+    {
+      name: "rename",
+      description: t("slashRename"),
+      icon: <PenLineIcon className="size-3.5" />,
+      action: "rename",
+    },
+    {
+      name: "model",
+      description: t("slashModel"),
+      icon: <ListIcon className="size-3.5" />,
+      action: "model",
+    },
+    {
+      name: "theme",
+      description: t("slashTheme"),
+      icon: <PaletteIcon className="size-3.5" />,
+      action: "theme",
+    },
+    {
+      name: "delete",
+      description: t("slashDelete"),
+      icon: <XIcon className="size-3.5" />,
+      action: "delete",
+    },
+    {
+      name: "purge",
+      description: t("slashPurge"),
+      icon: <BombIcon className="size-3.5" />,
+      action: "purge",
+    },
+  ];
+}
 
 type SlashCommandMenuProps = {
   query: string;
+  commands: SlashCommand[];
   onSelect: (command: SlashCommand) => void;
   onClose: () => void;
   selectedIndex: number;
@@ -74,12 +81,14 @@ type SlashCommandMenuProps = {
 
 export function SlashCommandMenu({
   query,
+  commands,
   onSelect,
   onClose: _onClose,
   selectedIndex,
 }: SlashCommandMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
-  const filtered = slashCommands.filter((cmd) =>
+  const t = useTranslations("chat");
+  const filtered = commands.filter((cmd) =>
     cmd.name.startsWith(query.toLowerCase())
   );
 
@@ -100,7 +109,7 @@ export function SlashCommandMenu({
       ref={menuRef}
     >
       <div className="px-4 py-2.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/40">
-        Commands
+        {t("commands")}
       </div>
       <div className="max-h-64 overflow-y-auto pb-1 no-scrollbar">
         {filtered.map((cmd, index) => (

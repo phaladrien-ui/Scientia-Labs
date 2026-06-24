@@ -5,38 +5,36 @@ import { AnimatePresence, motion } from "framer-motion";
 import { XIcon } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 const cards = [
   {
     image: "/images/capabilities/microscope.svg",
-    title: "Laboratory",
-    description: "Simulate scientific experiments",
+    titleKey: "laboratory",
+    descriptionKey: "laboratoryDescription",
   },
   {
     image: "/images/capabilities/code.svg",
-    title: "Development",
-    description: "Build applications with AI agents",
+    titleKey: "development",
+    descriptionKey: "developmentDescription",
   },
   {
     image: "/images/capabilities/book.svg",
-    title: "Learning",
-    description: "Master complex concepts",
+    titleKey: "learning",
+    descriptionKey: "learningDescription",
   },
 ];
 
-export function CapabilitiesCarousel() {
+export function CapabilitiesCarousel({ onDismiss }: { onDismiss: () => void }) {
+  const t = useTranslations("chat");
   const [current, setCurrent] = useState(0);
-  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    if (dismissed) return;
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % cards.length);
     }, 4000);
     return () => clearInterval(timer);
-  }, [dismissed]);
-
-  if (dismissed) return null;
+  }, []);
 
   return (
     <div className="w-full max-w-sm mx-auto relative">
@@ -44,7 +42,7 @@ export function CapabilitiesCarousel() {
         <button
           aria-label="Close"
           className="absolute top-1.5 right-1.5 z-10 size-5 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted/50 transition-colors"
-          onClick={() => setDismissed(true)}
+          onClick={onDismiss}
           type="button"
         >
           <XIcon size={12} />
@@ -56,12 +54,12 @@ export function CapabilitiesCarousel() {
             className="flex items-center gap-3 p-3"
             exit={{ opacity: 0, y: -8 }}
             initial={{ opacity: 0, y: 8 }}
-            key={current}
+            key={`card-${current}`}
             transition={{ duration: 0.35, ease: "easeInOut" }}
           >
             <div className="size-10 rounded-lg overflow-hidden shrink-0 border border-border/20 bg-white">
               <Image
-                alt={cards[current].title}
+                alt={t(cards[current].titleKey)}
                 className="object-contain size-full p-1.5"
                 height={40}
                 src={cards[current].image}
@@ -71,10 +69,10 @@ export function CapabilitiesCarousel() {
             </div>
             <div className="min-w-0">
               <h3 className="text-xs font-semibold text-foreground tracking-tight">
-                {cards[current].title}
+                {t(cards[current].titleKey)}
               </h3>
               <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-                {cards[current].description}
+                {t(cards[current].descriptionKey)}
               </p>
             </div>
           </motion.div>
@@ -90,6 +88,7 @@ export function CapabilitiesCarousel() {
               }`}
               key={i}
               onClick={() => setCurrent(i)}
+              type="button"
             />
           ))}
         </div>

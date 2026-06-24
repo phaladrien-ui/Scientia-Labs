@@ -15,7 +15,7 @@ export const GreetingWebsites = () => {
         initial={{ opacity: 0, y: 10 }}
         transition={{ delay: 0.35, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+        <h1 className="text-2xl text-black dark:text-white/90 md:text-3xl">
           {t("websitesGreeting")}
         </h1>
       </motion.div>

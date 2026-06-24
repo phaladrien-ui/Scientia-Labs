@@ -15,6 +15,7 @@ import {
   Wand2Icon,
 } from "lucide-react";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -22,29 +23,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-// Menu du chat
-const chatMenuItems = [
-  { id: "file", label: "Choose a file", icon: PaperclipIcon },
-  { id: "research", label: "Deep Research", icon: FlaskConicalIcon },
-  { id: "reasoning", label: "Reasoning", icon: BrainIcon },
-  { id: "course", label: "Course", icon: BookOpenIcon },
-  { id: "search", label: "Search", icon: SearchIcon },
-] as const;
-
-// Menu websites
-const websiteMenuItems = [
-  { id: "file", label: "Choose a file", icon: PaperclipIcon },
-  { id: "frontend", label: "Frontend", icon: Code2Icon },
-  { id: "backend", label: "Backend", icon: GlobeIcon },
-  { id: "fullstack", label: "Full Stack", icon: PencilIcon },
-  { id: "debug", label: "Debug", icon: BugIcon },
-  { id: "optimize", label: "Optimize", icon: Wand2Icon },
-  { id: "deploy", label: "Deploy", icon: SearchIcon },
-] as const;
-
-const allItems = [...chatMenuItems, ...websiteMenuItems] as const;
-
-export type ModeType = (typeof allItems)[number]["id"];
+export type ModeType = "file" | "research" | "reasoning" | "course" | "search" | "frontend" | "backend" | "fullstack" | "debug" | "optimize" | "deploy";
 
 type PlusMenuProps = {
   onModeSelect?: (mode: ModeType) => void;
@@ -53,27 +32,33 @@ type PlusMenuProps = {
   isWebsites?: boolean;
 };
 
-const modeLabels: Record<ModeType, string> = {
-  file: "Choose a file",
-  research: "Agent · Research",
-  reasoning: "Agent · Reasoning",
-  course: "Agent · Course",
-  search: "Agent · Search",
-  frontend: "Agent · Frontend",
-  backend: "Agent · Backend",
-  fullstack: "Agent · Full Stack",
-  debug: "Agent · Debug",
-  optimize: "Agent · Optimize",
-  deploy: "Agent · Deploy",
-};
-
 export function PlusMenu({
   onModeSelect,
   activeMode,
   fileInputRef,
   isWebsites,
 }: PlusMenuProps) {
+  const t = useTranslations("chat");
   const [open, setOpen] = useState(false);
+
+  const chatMenuItems = [
+    { id: "file" as const, label: t("chooseFile"), icon: PaperclipIcon },
+    { id: "research" as const, label: t("deepResearch"), icon: FlaskConicalIcon },
+    { id: "reasoning" as const, label: t("reasoning"), icon: BrainIcon },
+    { id: "course" as const, label: t("course"), icon: BookOpenIcon },
+    { id: "search" as const, label: t("search"), icon: SearchIcon },
+  ];
+
+  const websiteMenuItems = [
+    { id: "file" as const, label: t("chooseFile"), icon: PaperclipIcon },
+    { id: "frontend" as const, label: t("frontend"), icon: Code2Icon },
+    { id: "backend" as const, label: t("backend"), icon: GlobeIcon },
+    { id: "fullstack" as const, label: t("fullstack"), icon: PencilIcon },
+    { id: "debug" as const, label: t("debug"), icon: BugIcon },
+    { id: "optimize" as const, label: t("optimize"), icon: Wand2Icon },
+    { id: "deploy" as const, label: t("deploy"), icon: SearchIcon },
+  ];
+
   const items = isWebsites ? websiteMenuItems : chatMenuItems;
 
   const handleSelect = (id: ModeType) => {
@@ -126,5 +111,19 @@ export function PlusMenu({
 
 export function getModeLabel(mode: ModeType | null): string {
   if (!mode) return "Agent";
-  return modeLabels[mode];
+  // Fallback statique pour getModeLabel (pas de hook ici)
+  const labels: Record<ModeType, string> = {
+    file: "Choose a file",
+    research: "Agent · Research",
+    reasoning: "Agent · Reasoning",
+    course: "Agent · Course",
+    search: "Agent · Search",
+    frontend: "Agent · Frontend",
+    backend: "Agent · Backend",
+    fullstack: "Agent · Full Stack",
+    debug: "Agent · Debug",
+    optimize: "Agent · Optimize",
+    deploy: "Agent · Deploy",
+  };
+  return labels[mode];
 }

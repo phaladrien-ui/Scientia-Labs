@@ -1,6 +1,8 @@
+// components/chat/visibility-selector.tsx
 "use client";
 
 import { type ReactNode, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,26 +21,6 @@ import {
 
 export type VisibilityType = "private" | "public";
 
-const visibilities: Array<{
-  id: VisibilityType;
-  label: string;
-  description: string;
-  icon: ReactNode;
-}> = [
-  {
-    id: "private",
-    label: "Private",
-    description: "Only you can access this chat",
-    icon: <LockIcon />,
-  },
-  {
-    id: "public",
-    label: "Public",
-    description: "Anyone with the link can access this chat",
-    icon: <GlobeIcon />,
-  },
-];
-
 export function VisibilitySelector({
   chatId,
   className,
@@ -47,6 +29,7 @@ export function VisibilitySelector({
   chatId: string;
   selectedVisibilityType: VisibilityType;
 } & React.ComponentProps<typeof Button>) {
+  const t = useTranslations("chat");
   const [open, setOpen] = useState(false);
 
   const { visibilityType, setVisibilityType } = useChatVisibility({
@@ -54,9 +37,29 @@ export function VisibilitySelector({
     initialVisibilityType: selectedVisibilityType,
   });
 
+  const visibilities: Array<{
+    id: VisibilityType;
+    label: string;
+    description: string;
+    icon: ReactNode;
+  }> = [
+    {
+      id: "private",
+      label: t("private"),
+      description: t("privateDescription"),
+      icon: <LockIcon />,
+    },
+    {
+      id: "public",
+      label: t("public"),
+      description: t("publicDescription"),
+      icon: <GlobeIcon />,
+    },
+  ];
+
   const selectedVisibility = useMemo(
     () => visibilities.find((visibility) => visibility.id === visibilityType),
-    [visibilityType]
+    [visibilityType, visibilities]
   );
 
   return (
