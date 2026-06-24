@@ -1,3 +1,4 @@
+// app/(chat)/settings/billing/billing-form.tsx
 "use client";
 
 import {
@@ -10,6 +11,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Card } from "@/components/chat/settings/shared/card";
 import { Row } from "@/components/chat/settings/shared/row";
@@ -39,6 +41,7 @@ export function BillingForm({
   initialPreferences: Record<string, unknown>;
 }) {
   const router = useRouter();
+  const t = useTranslations("settings");
 
   const [spendingLimit, setSpendingLimit] = useState(
     (initialPreferences.spendingLimit as number) ?? 100
@@ -68,20 +71,20 @@ export function BillingForm({
 
   return (
     <div className="space-y-8">
-      <SectionLabel>Usage & Billing</SectionLabel>
+      <SectionLabel>{t("billing")}</SectionLabel>
 
       <div className="grid grid-cols-3 gap-3">
         <Card>
           <div className="p-4 flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
               <Zap className="size-3.5 text-amber-500" />
-              <span className="text-[14px] text-neutral-500">Tokens</span>
+              <span className="text-[14px] text-neutral-500">{t("tokens")}</span>
             </div>
             <span className="text-xl font-bold text-neutral-900 dark:text-neutral-100 tabular-nums">
               {formatNumber(tokensThisMonth)}
             </span>
             <span className="text-[14px] text-neutral-400">
-              of {formatNumber(tokenLimit)}
+              {t("of")} {formatNumber(tokenLimit)}
             </span>
           </div>
         </Card>
@@ -89,24 +92,24 @@ export function BillingForm({
           <div className="p-4 flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
               <DollarSign className="size-3.5 text-emerald-500" />
-              <span className="text-[14px] text-neutral-500">Est. cost</span>
+              <span className="text-[14px] text-neutral-500">{t("estCost")}</span>
             </div>
             <span className="text-xl font-bold text-neutral-900 dark:text-neutral-100 tabular-nums">
               ${formatPrice(estimatedCost)}
             </span>
-            <span className="text-[14px] text-neutral-400">this month</span>
+            <span className="text-[14px] text-neutral-400">{t("thisMonth")}</span>
           </div>
         </Card>
         <Card>
           <div className="p-4 flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
               <CreditCard className="size-3.5 text-violet-500" />
-              <span className="text-[14px] text-neutral-500">Limit</span>
+              <span className="text-[14px] text-neutral-500">{t("limit")}</span>
             </div>
             <span className="text-xl font-bold text-neutral-900 dark:text-neutral-100 tabular-nums">
               ${spendingLimit}
             </span>
-            <span className="text-[14px] text-neutral-400">per month</span>
+            <span className="text-[14px] text-neutral-400">{t("perMonth")}</span>
           </div>
         </Card>
       </div>
@@ -114,34 +117,34 @@ export function BillingForm({
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Monthly consumption
+            {t("monthlyConsumption")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Track your token and storage usage.
+            {t("monthlyConsumptionDescription")}
           </p>
         </div>
         <div className="p-5 space-y-4">
           <UsageBar
-            label="Tokens consumed"
+            label={t("tokensConsumed")}
             total={tokenLimit}
             used={tokensThisMonth}
           />
           <UsageBar
-            label="Spending"
+            label={t("spending")}
             total={spendingLimit}
             used={Math.round(estimatedCost)}
           />
-          <UsageBar label="Storage" total={storageLimit} used={storageUsed} />
+          <UsageBar label={t("storage")} total={storageLimit} used={storageUsed} />
         </div>
       </Card>
 
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Cost breakdown
+            {t("costBreakdown")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Estimated costs by service.
+            {t("costBreakdownDescription")}
           </p>
         </div>
         <Row
@@ -151,8 +154,8 @@ export function BillingForm({
             </span>
           }
           icon={MessageCircle}
-          label="Messages"
-          value={`${formatNumber(stats.messagesThisMonth)} messages`}
+          label={t("messages")}
+          value={`${formatNumber(stats.messagesThisMonth)} ${t("messages").toLowerCase()}`}
         />
         <Row
           action={
@@ -161,8 +164,8 @@ export function BillingForm({
             </span>
           }
           icon={Brain}
-          label="Memory storage"
-          value={`${storageUsed} MB used`}
+          label={t("memoryStorage")}
+          value={`${storageUsed} MB ${t("used")}`}
         />
         <Row
           action={
@@ -171,12 +174,12 @@ export function BillingForm({
             </span>
           }
           icon={FileText}
-          label="Documents"
-          value={`${stats.totalDocuments} documents`}
+          label={t("documents")}
+          value={`${stats.totalDocuments} ${t("documents").toLowerCase()}`}
         />
         <div className="px-5 py-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
           <span className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Total estimated
+            {t("totalEstimated")}
           </span>
           <span className="text-[16px] font-bold text-neutral-900 dark:text-neutral-100">
             $
@@ -190,17 +193,17 @@ export function BillingForm({
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Spending controls
+            {t("spendingControls")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Set limits and alerts to control costs.
+            {t("spendingControlsDescription")}
           </p>
         </div>
         <div className="p-5 space-y-4">
           <div className="flex items-center gap-3">
             <DollarSign className="size-4 text-neutral-400 shrink-0" />
             <span className="text-[14px] text-neutral-600 dark:text-neutral-400">
-              Monthly spending limit
+              {t("monthlySpendingLimit")}
             </span>
             <div className="flex items-center gap-2 ml-auto">
               <span className="text-[14px] text-neutral-400">$</span>
@@ -221,7 +224,7 @@ export function BillingForm({
           <div className="flex items-center gap-3">
             <TrendingUp className="size-4 text-neutral-400 shrink-0" />
             <span className="text-[14px] text-neutral-600 dark:text-neutral-400">
-              Alert at
+              {t("alertAt")}
             </span>
             <div className="flex items-center gap-2 ml-auto">
               <input

@@ -1,6 +1,8 @@
 // app/layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
 import { SessionProvider } from "next-auth/react";
 import { IntlProvider } from "@/components/intl-provider";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -49,11 +51,13 @@ const THEME_COLOR_SCRIPT = `\
   updateThemeColor();
 })();`;
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const messages = await getMessages();
+
   return (
     <html
       className={`${geist.variable} ${geistMono.variable}`}
@@ -69,22 +73,24 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          disableTransitionOnChange
-          enableSystem
-        >
-          <SessionProvider
-            basePath={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/auth`}
-            refetchInterval={5}
-            refetchOnWindowFocus={true}
+        <NextIntlClientProvider messages={messages}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            disableTransitionOnChange
+            enableSystem
           >
-            <IntlProvider>
-              <TooltipProvider>{children}</TooltipProvider>
-            </IntlProvider>
-          </SessionProvider>
-        </ThemeProvider>
+            <SessionProvider
+              basePath={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/auth`}
+              refetchInterval={5}
+              refetchOnWindowFocus={true}
+            >
+              <IntlProvider>
+                <TooltipProvider>{children}</TooltipProvider>
+              </IntlProvider>
+            </SessionProvider>
+          </ThemeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

@@ -1,20 +1,23 @@
+// components/chat/settings/settings-nav.tsx
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-
-const navItems = [
-  { id: "general", label: "General" },
-  { id: "engine", label: "Model Engine" },
-  { id: "memory", label: "Memory" },
-  { id: "tools", label: "Tools" },
-  { id: "security", label: "Security" },
-  { id: "billing", label: "Billing" },
-];
+import { useTranslations } from "next-intl";
 
 export function SettingsNav() {
+  const t = useTranslations("settings");
   const pathname = usePathname();
   const router = useRouter();
   const activeSection = pathname.split("/").pop() ?? "general";
+
+  const navItems = [
+    { id: "general", label: t("general") },
+    { id: "engine", label: t("engine") },
+    { id: "memory", label: t("memory") },
+    { id: "tools", label: t("tools") },
+    { id: "security", label: t("security") },
+    { id: "billing", label: t("billing") },
+  ];
 
   return (
     <nav className="flex flex-col gap-0.5">

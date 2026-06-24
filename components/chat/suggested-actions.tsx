@@ -4,6 +4,7 @@
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { motion } from "framer-motion";
 import { memo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { suggestions } from "@/lib/constants";
 import type { ChatMessage } from "@/lib/types";
 import type { VisibilityType } from "./visibility-selector";
@@ -20,6 +21,7 @@ function PureSuggestedActions({
   sendMessage,
   setActiveCategory: setActiveCategoryProp,
 }: SuggestedActionsProps) {
+  const t = useTranslations("chat");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const category = suggestions.find((s) => s.label === activeCategory);
   const activePrompts = category?.prompts || [];
@@ -53,20 +55,21 @@ function PureSuggestedActions({
                     role: "user",
                     parts: [{ type: "text", text: prompt }],
                   });
-                  updateCategory(null);
                 }}
                 type="button"
               >
-                <category.icon className="size-4 shrink-0" />
-                <span>{prompt}</span>
+                <span className="text-black/60 dark:text-white/60">
+                  <category.icon className="size-3.5" />
+                </span>
+                <span className="text-left">{prompt}</span>
               </button>
             ))}
             <button
-              className="text-[12px] text-black/50 hover:text-black mt-1"
+              className="mt-1 text-[12px] text-muted-foreground/50 hover:text-muted-foreground transition-colors self-start px-3"
               onClick={() => updateCategory(null)}
               type="button"
             >
-              ← Back
+              ← {t("back")}
             </button>
           </motion.div>
         </div>
@@ -76,27 +79,19 @@ function PureSuggestedActions({
 
   // Phase 1
   return (
-    <div
-      className="flex justify-center gap-12 w-full pb-1"
-      data-testid="suggested-actions"
-    >
-      {suggestions.slice(0, 3).map((suggestion, index) => (
+    <div className="flex flex-wrap justify-center gap-2">
+      {suggestions.map((suggestion, index) => (
         <motion.button
           animate={{ opacity: 1, y: 0 }}
-          className="shrink-0 flex items-center gap-2 rounded-xl border border-black/20 dark:border-border/50 bg-card/30 px-6 py-2.5 text-[13px] font-medium text-black dark:text-white/90 transition-all hover:bg-card/50"
-          exit={{ opacity: 0, y: 8 }}
-          initial={{ opacity: 0, y: 8 }}
+          className="inline-flex items-center gap-1.5 rounded-full border border-black/20 dark:border-border/30 bg-card/20 px-3.5 py-1.5 text-[13px] text-black dark:text-white/90 transition-all hover:bg-card/40"
+          initial={{ opacity: 0, y: 4 }}
           key={suggestion.label}
+          transition={{ delay: 0.05 * index, duration: 0.3 }}
           onClick={() => updateCategory(suggestion.label)}
-          transition={{
-            delay: 0.04 * index,
-            duration: 0.25,
-            ease: [0.22, 1, 0.36, 1],
-          }}
           type="button"
         >
-          <suggestion.icon className="size-4 shrink-0" />
-          <span>{suggestion.label}</span>
+          <suggestion.icon className="size-3.5 text-black/60 dark:text-white/60" />
+          <span>{t(suggestion.label.toLowerCase())}</span>
         </motion.button>
       ))}
     </div>
@@ -105,10 +100,7 @@ function PureSuggestedActions({
 
 export const SuggestedActions = memo(
   PureSuggestedActions,
-  (prevProps, nextProps) => {
-    if (prevProps.chatId !== nextProps.chatId) return false;
-    if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
-      return false;
-    return true;
-  }
+  (prev, next) =>
+    prev.chatId === next.chatId &&
+    prev.selectedVisibilityType === next.selectedVisibilityType
 );

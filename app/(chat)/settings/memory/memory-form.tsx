@@ -1,3 +1,4 @@
+// app/(chat)/settings/memory/memory-form.tsx
 "use client";
 
 import {
@@ -9,6 +10,7 @@ import {
   Shrink,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Card } from "@/components/chat/settings/shared/card";
 import { Row } from "@/components/chat/settings/shared/row";
@@ -22,6 +24,7 @@ export function MemoryForm({
   initialPreferences: Record<string, unknown>;
 }) {
   const router = useRouter();
+  const t = useTranslations("settings");
 
   const [shortTerm, setShortTerm] = useState(
     (initialPreferences.shortTerm as boolean) ?? true
@@ -76,39 +79,39 @@ export function MemoryForm({
 
   return (
     <div className="space-y-8">
-      <SectionLabel>Memory System</SectionLabel>
+      <SectionLabel>{t("memory")}</SectionLabel>
 
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Memory usage
+            {t("memoryUsage")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Current memory consumption across all layers.
+            {t("memoryUsageDescription")}
           </p>
         </div>
         <div className="p-5 space-y-4">
           <UsageBar
-            label="Total memory"
+            label={t("totalMemory")}
             total={memoryCapacity}
             used={memoryUsed}
           />
           <div className="grid grid-cols-2 gap-4 mt-2">
             <div className="flex items-center gap-2 text-[14px] text-neutral-500">
               <div className="size-2 rounded-full bg-blue-500" />
-              Short-term: 32 MB
+              {t("shortTermMem")}: 32 MB
             </div>
             <div className="flex items-center gap-2 text-[14px] text-neutral-500">
               <div className="size-2 rounded-full bg-emerald-500" />
-              Long-term: 64 MB
+              {t("longTermMem")}: 64 MB
             </div>
             <div className="flex items-center gap-2 text-[14px] text-neutral-500">
               <div className="size-2 rounded-full bg-amber-500" />
-              Project: 20 MB
+              {t("projectMem")}: 20 MB
             </div>
             <div className="flex items-center gap-2 text-[14px] text-neutral-500">
               <div className="size-2 rounded-full bg-violet-500" />
-              Embeddings: 12 MB
+              {t("embeddingsMem")}: 12 MB
             </div>
           </div>
         </div>
@@ -117,17 +120,17 @@ export function MemoryForm({
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Memory layers
+            {t("memoryLayers")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Configure how Orion stores and retrieves context.
+            {t("memoryLayersDescription")}
           </p>
         </div>
         <Row
           action={
             <Toggle
               checked={shortTerm}
-              label="Short-term memory"
+              label={t("shortTermMemory")}
               onChange={(v) => {
                 setShortTerm(v);
                 save({ ...prefs, shortTerm: v });
@@ -135,14 +138,14 @@ export function MemoryForm({
             />
           }
           icon={Brain}
-          label="Short-term memory"
-          value="Recent conversation context for immediate recall"
+          label={t("shortTermMemory")}
+          value={t("shortTermMemoryDescription")}
         />
         <Row
           action={
             <Toggle
               checked={longTerm}
-              label="Long-term memory"
+              label={t("longTermMemory")}
               onChange={(v) => {
                 setLongTerm(v);
                 save({ ...prefs, longTerm: v });
@@ -150,14 +153,14 @@ export function MemoryForm({
             />
           }
           icon={HardDrive}
-          label="Long-term memory"
-          value="Persistent knowledge across sessions and conversations"
+          label={t("longTermMemory")}
+          value={t("longTermMemoryDescription")}
         />
         <Row
           action={
             <Toggle
               checked={autoSummary}
-              label="Auto-summarization"
+              label={t("autoSummarization")}
               onChange={(v) => {
                 setAutoSummary(v);
                 save({ ...prefs, autoSummary: v });
@@ -165,25 +168,25 @@ export function MemoryForm({
             />
           }
           icon={RefreshCw}
-          label="Auto-summarization"
-          value="Automatically compress and summarize old conversations"
+          label={t("autoSummarization")}
+          value={t("autoSummarizationDescription")}
         />
       </Card>
 
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Compression & limits
+            {t("compressionLimits")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Control memory usage and retention policies.
+            {t("compressionLimitsDescription")}
           </p>
         </div>
         <Row
           action={
             <Toggle
               checked={compression}
-              label="Memory compression"
+              label={t("memoryCompression")}
               onChange={(v) => {
                 setCompression(v);
                 save({ ...prefs, compression: v });
@@ -191,14 +194,14 @@ export function MemoryForm({
             />
           }
           icon={Shrink}
-          label="Memory compression"
-          value="Reduce memory footprint by compressing older context"
+          label={t("memoryCompression")}
+          value={t("memoryCompressionDescription")}
         />
         {compression && (
           <div className="px-5 pb-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[14px] font-medium text-neutral-600 dark:text-neutral-400">
-                Compression level
+                {t("compressionLevel")}
               </span>
               <span className="text-[14px] tabular-nums text-neutral-900 dark:text-neutral-100 font-medium">
                 {compressionLevel}%
@@ -218,8 +221,8 @@ export function MemoryForm({
               value={compressionLevel}
             />
             <div className="flex justify-between mt-1">
-              <span className="text-[12px] text-neutral-400">Light</span>
-              <span className="text-[12px] text-neutral-400">Aggressive</span>
+              <span className="text-[12px] text-neutral-400">{t("light")}</span>
+              <span className="text-[12px] text-neutral-400">{t("aggressive")}</span>
             </div>
           </div>
         )}
@@ -233,21 +236,21 @@ export function MemoryForm({
               }}
               value={memoryExpiration}
             >
-              <option value="7d">7 days</option>
-              <option value="30d">30 days</option>
-              <option value="90d">90 days</option>
-              <option value="never">Never</option>
+              <option value="7d">{t("7days")}</option>
+              <option value="30d">{t("30days")}</option>
+              <option value="90d">{t("90days")}</option>
+              <option value="never">{t("never")}</option>
             </select>
           }
           icon={Clock}
-          label="Memory expiration"
-          value="Automatically clear old memories after a set period"
+          label={t("memoryExpiration")}
+          value={t("memoryExpirationDescription")}
         />
         <Row
           action={
             <Toggle
               checked={syncMemory}
-              label="Sync memory"
+              label={t("syncMemory")}
               onChange={(v) => {
                 setSyncMemory(v);
                 save({ ...prefs, syncMemory: v });
@@ -255,24 +258,24 @@ export function MemoryForm({
             />
           }
           icon={Layers}
-          label="Sync memory"
-          value="Synchronize memory across all your sessions and devices"
+          label={t("syncMemory")}
+          value={t("syncMemoryDescription")}
         />
       </Card>
 
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Short-term memory limit
+            {t("shortTermMemoryLimit")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Maximum number of messages kept in short-term context.
+            {t("shortTermMemoryLimitDescription")}
           </p>
         </div>
         <div className="p-5">
           <div className="flex items-center gap-3">
             <span className="text-[14px] text-neutral-600 dark:text-neutral-400">
-              Messages
+              {t("messages")}
             </span>
             <input
               className="w-20 rounded-lg border border-neutral-200 bg-transparent px-2.5 py-1.5 text-[14px] text-neutral-900 dark:border-neutral-700 dark:text-neutral-100"

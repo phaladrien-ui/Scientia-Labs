@@ -3,45 +3,10 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ScientiaLogo } from "@/components/chat/scientia-logo";
 
-const greetings = [
-  "Who are we learning with today?",
-  "What are we exploring today?",
-  "Ready to learn something new?",
-  "What curiosity brings you here?",
-  "What shall we discover together?",
-  "Where shall we start today?",
-  "What's on your mind?",
-  "What would you like to understand?",
-  "Let's dive into something great.",
-  "What knowledge are you seeking?",
-];
-
-const timeBasedGreetings: Record<string, string[]> = {
-  morning: [
-    "Good morning! Who are we learning with today?",
-    "Good morning! Ready to start the day?",
-    "Good morning! What shall we explore?",
-  ],
-  afternoon: [
-    "Good afternoon! What are we learning today?",
-    "Good afternoon! What's sparking your curiosity?",
-    "Good afternoon! Ready to dive in?",
-  ],
-  evening: [
-    "Good evening! Who are we learning with tonight?",
-    "Good evening! What's on your mind?",
-    "Good evening! Let's explore something together.",
-  ],
-  night: [
-    "Late night curiosity? I'm here for it.",
-    "Burning the midnight oil? Let's learn.",
-    "The night is young. What shall we discover?",
-  ],
-};
-
-function getGreeting(): string {
+function getGreeting(t: ReturnType<typeof useTranslations>): string {
   const hour = new Date().getHours();
   let timeKey: string;
   if (hour >= 5 && hour < 12) timeKey = "morning";
@@ -51,19 +16,28 @@ function getGreeting(): string {
 
   // 1 chance sur 2 d'avoir un message basé sur l'heure
   if (Math.random() > 0.5) {
-    const pool = timeBasedGreetings[timeKey];
+    const pool = [
+      t(`${timeKey}1`),
+      t(`${timeKey}2`),
+      t(`${timeKey}3`),
+    ];
     return pool[Math.floor(Math.random() * pool.length)];
   }
 
+  const greetings = [
+    t("greeting1"), t("greeting2"), t("greeting3"), t("greeting4"), t("greeting5"),
+    t("greeting6"), t("greeting7"), t("greeting8"), t("greeting9"), t("greeting10"),
+  ];
   return greetings[Math.floor(Math.random() * greetings.length)];
 }
 
 export const Greeting = () => {
+  const t = useTranslations("chat");
   const [greeting, setGreeting] = useState("");
 
   useEffect(() => {
-    setGreeting(getGreeting());
-  }, []);
+    setGreeting(getGreeting(t));
+  }, [t]);
 
   return (
     <div className="flex flex-col items-center px-4" key="overview">

@@ -1,3 +1,4 @@
+// app/(chat)/settings/tools/tools-form.tsx
 "use client";
 
 import {
@@ -10,6 +11,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Card } from "@/components/chat/settings/shared/card";
 import { Row } from "@/components/chat/settings/shared/row";
@@ -55,6 +57,7 @@ export function ToolsForm({
   initialPreferences: Record<string, unknown>;
 }) {
   const router = useRouter();
+  const t = useTranslations("settings");
 
   const [connectedTools, setConnectedTools] = useState<string[]>(
     (initialPreferences.connectedTools as string[]) ?? []
@@ -99,7 +102,7 @@ export function ToolsForm({
 
   function toggleTool(id: string) {
     const updated = connectedTools.includes(id)
-      ? connectedTools.filter((t) => t !== id)
+      ? connectedTools.filter((tool) => tool !== id)
       : [...connectedTools, id];
     setConnectedTools(updated);
     save({ ...prefs, connectedTools: updated });
@@ -113,15 +116,15 @@ export function ToolsForm({
 
   return (
     <div className="space-y-8">
-      <SectionLabel>Tools & Integrations</SectionLabel>
+      <SectionLabel>{t("tools")}</SectionLabel>
 
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Connected integrations
+            {t("connectedIntegrations")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Connect external services your agents can use.
+            {t("connectedIntegrationsDescription")}
           </p>
         </div>
         {INTEGRATIONS.map((tool) => {
@@ -138,13 +141,13 @@ export function ToolsForm({
                   onClick={() => toggleTool(tool.id)}
                   type="button"
                 >
-                  {isConnected ? "Disconnect" : "Connect"}
+                  {isConnected ? t("disconnect") : t("connect")}
                 </button>
               }
               icon={tool.icon}
               key={tool.id}
               label={tool.label}
-              value={isConnected ? "Connected" : "Not connected"}
+              value={isConnected ? t("connected") : t("notConnected")}
             />
           );
         })}
@@ -153,10 +156,10 @@ export function ToolsForm({
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Tool permissions
+            {t("toolPermissions")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Set access levels for each connected tool.
+            {t("toolPermissionsDescription")}
           </p>
         </div>
         {connectedTools.map((toolId) => {
@@ -172,9 +175,9 @@ export function ToolsForm({
                   onChange={(e) => setPermission(toolId, e.target.value)}
                   value={toolPermissions[toolId] ?? "read"}
                 >
-                  <option value="read">Read</option>
-                  <option value="write">Write</option>
-                  <option value="admin">Admin</option>
+                  <option value="read">{t("read")}</option>
+                  <option value="write">{t("write")}</option>
+                  <option value="admin">{t("admin")}</option>
                 </select>
               }
               icon={tool.icon}
@@ -182,17 +185,17 @@ export function ToolsForm({
               label={tool.label}
               value={
                 toolPermissions[toolId] === "admin"
-                  ? "Admin"
+                  ? t("admin")
                   : toolPermissions[toolId] === "write"
-                    ? "Write"
-                    : "Read"
+                    ? t("write")
+                    : t("read")
               }
             />
           );
         })}
         {connectedTools.length === 0 && (
           <div className="px-5 py-4 text-[14px] text-neutral-400">
-            No tools connected yet. Connect a tool above to set permissions.
+            {t("noToolsConnected")}
           </div>
         )}
       </Card>
@@ -200,10 +203,10 @@ export function ToolsForm({
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Limits & safety
+            {t("limitsSafety")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Configure execution boundaries for tools.
+            {t("limitsSafetyDescription")}
           </p>
         </div>
         <Row
@@ -221,12 +224,12 @@ export function ToolsForm({
                 type="number"
                 value={toolTimeout}
               />
-              <span className="text-[14px] text-neutral-400">sec</span>
+              <span className="text-[14px] text-neutral-400">{t("sec")}</span>
             </div>
           }
           icon={Timer}
-          label="Execution timeout"
-          value="Maximum time a tool can run before being stopped"
+          label={t("executionTimeout")}
+          value={t("executionTimeoutDescription")}
         />
         <Row
           action={
@@ -243,18 +246,18 @@ export function ToolsForm({
                 type="number"
                 value={toolQuota}
               />
-              <span className="text-[14px] text-neutral-400">/day</span>
+              <span className="text-[14px] text-neutral-400">{t("perDay")}</span>
             </div>
           }
           icon={Wrench}
-          label="Daily call quota"
-          value="Maximum tool calls per day"
+          label={t("dailyCallQuota")}
+          value={t("dailyCallQuotaDescription")}
         />
         <Row
           action={
             <Toggle
               checked={sandboxMode}
-              label="Sandbox mode"
+              label={t("sandboxMode")}
               onChange={(v) => {
                 setSandboxMode(v);
                 save({ ...prefs, sandboxMode: v });
@@ -262,14 +265,14 @@ export function ToolsForm({
             />
           }
           icon={Shield}
-          label="Sandbox mode"
-          value="Run tools in an isolated environment for safety"
+          label={t("sandboxMode")}
+          value={t("sandboxModeDescription")}
         />
         <Row
           action={
             <Toggle
               checked={toolLogs}
-              label="Tool execution logs"
+              label={t("toolExecutionLogs")}
               onChange={(v) => {
                 setToolLogs(v);
                 save({ ...prefs, toolLogs: v });
@@ -277,8 +280,8 @@ export function ToolsForm({
             />
           }
           icon={FileText}
-          label="Tool execution logs"
-          value="Keep detailed logs of all tool executions"
+          label={t("toolExecutionLogs")}
+          value={t("toolExecutionLogsDescription")}
         />
       </Card>
     </div>

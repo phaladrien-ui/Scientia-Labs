@@ -1,8 +1,12 @@
+// components/chat/greeting-websites.tsx
 "use client";
 
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 
 export const GreetingWebsites = () => {
+  const t = useTranslations("chat");
+
   return (
     <div className="flex flex-col items-center px-4" key="overview">
       <motion.div
@@ -12,11 +16,8 @@ export const GreetingWebsites = () => {
         transition={{ delay: 0.35, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
         <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
-          🌐 Create a website
+          {t("websitesGreeting")}
         </h1>
-        <p className="mt-3 text-base text-muted-foreground md:text-lg">
-          Describe the site you want and I'll build it for you.
-        </p>
       </motion.div>
     </div>
   );

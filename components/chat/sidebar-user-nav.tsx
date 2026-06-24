@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import type { User as NextAuthUser } from "next-auth";
 import { signOut, useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,6 +52,7 @@ export function SidebarUserNav({ user }: { user: NextAuthUser }) {
   const router = useRouter();
   const { data, status } = useSession();
   const { setTheme, resolvedTheme } = useTheme();
+  const t = useTranslations("auth");
 
   const isGuest = guestRegex.test(data?.user?.email ?? "");
   const displayName = getDisplayName(user);
@@ -126,7 +128,7 @@ export function SidebarUserNav({ user }: { user: NextAuthUser }) {
                 onClick={() => router.push("/settings/general")}
               >
                 <User className="size-4 text-sidebar-foreground/50" />
-                <span>View profile</span>
+                <span>{t("viewProfile")}</span>
               </DropdownMenuItem>
 
               <DropdownMenuItem
@@ -134,7 +136,7 @@ export function SidebarUserNav({ user }: { user: NextAuthUser }) {
                 onClick={() => router.push("/settings/general")}
               >
                 <Settings2 className="size-4 text-sidebar-foreground/50" />
-                <span>Settings</span>
+                <span>{t("settings")}</span>
               </DropdownMenuItem>
 
               <DropdownMenuItem
@@ -149,7 +151,9 @@ export function SidebarUserNav({ user }: { user: NextAuthUser }) {
                   <Moon className="size-4 text-sidebar-foreground/50" />
                 )}
                 <span>
-                  Switch to {resolvedTheme === "dark" ? "light" : "dark"} mode
+                  {resolvedTheme === "dark"
+                    ? t("switchToLight")
+                    : t("switchToDark")}
                 </span>
               </DropdownMenuItem>
             </div>
@@ -176,7 +180,9 @@ export function SidebarUserNav({ user }: { user: NextAuthUser }) {
               }}
             >
               <LogOut className="size-4" />
-              <span>{isGuest ? "Login to your account" : "Sign out"}</span>
+              <span>
+                {isGuest ? t("loginToAccount") : t("signOut")}
+              </span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

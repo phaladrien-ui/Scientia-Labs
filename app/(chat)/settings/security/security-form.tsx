@@ -1,3 +1,4 @@
+// app/(chat)/settings/security/security-form.tsx
 "use client";
 
 import {
@@ -12,6 +13,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Card } from "@/components/chat/settings/shared/card";
 import { Row } from "@/components/chat/settings/shared/row";
@@ -80,14 +82,14 @@ const MOCK_API_KEYS = [
   {
     id: "1",
     name: "Production key",
-    prefix: "ork_prod_",
+    prefix: "sk_prod_",
     lastUsed: "May 25, 2026",
     created: "Apr 10, 2026",
   },
   {
     id: "2",
     name: "Development key",
-    prefix: "ork_dev_",
+    prefix: "sk_dev_",
     lastUsed: "May 20, 2026",
     created: "Mar 5, 2026",
   },
@@ -101,6 +103,7 @@ export function SecurityForm({
   initialPreferences: Record<string, unknown>;
 }) {
   const router = useRouter();
+  const t = useTranslations("settings");
 
   const [twoFactor, setTwoFactor] = useState(
     (initialPreferences.twoFactor as boolean) ?? false
@@ -157,15 +160,15 @@ export function SecurityForm({
 
   return (
     <div className="space-y-8">
-      <SectionLabel>Security</SectionLabel>
+      <SectionLabel>{t("security")}</SectionLabel>
 
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Authentication
+            {t("authentication")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Protect your account with additional security layers.
+            {t("authenticationDescription")}
           </p>
         </div>
         <Row
@@ -180,18 +183,18 @@ export function SecurityForm({
             />
           }
           icon={Shield}
-          label="Two-factor authentication"
+          label={t("twoFactorAuth")}
           value={
             twoFactor
-              ? "Enabled — Your account is protected"
-              : "Add an extra layer of security to your account"
+              ? t("twoFactorEnabled")
+              : t("twoFactorDisabled")
           }
         />
         <Row
           action={
             <Toggle
               checked={ipRestriction}
-              label="IP restriction"
+              label={t("ipRestriction")}
               onChange={(v) => {
                 setIpRestriction(v);
                 save({ twoFactor, ipRestriction: v, allowedIps });
@@ -199,11 +202,11 @@ export function SecurityForm({
             />
           }
           icon={Monitor}
-          label="IP restriction"
+          label={t("ipRestriction")}
           value={
             ipRestriction
-              ? `Access limited to ${allowedIps.length} IP(s)`
-              : "Allow access from any IP address"
+              ? `${t("accessLimitedTo")} ${allowedIps.length} IP(s)`
+              : t("allowAnyIp")
           }
         />
         {ipRestriction && (
@@ -217,7 +220,7 @@ export function SecurityForm({
                     addIp();
                   }
                 }}
-                placeholder="Add IP address..."
+                placeholder={t("addIpAddress")}
                 value={newIp}
               />
               <button
@@ -250,10 +253,10 @@ export function SecurityForm({
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Active sessions
+            {t("activeSessions")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Manage devices currently connected to your account.
+            {t("activeSessionsDescription")}
           </p>
         </div>
         {MOCK_SESSIONS.map((session) => (
@@ -261,14 +264,14 @@ export function SecurityForm({
             action={
               session.current ? (
                 <span className="text-[12px] font-medium text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                  Current
+                  {t("current")}
                 </span>
               ) : (
                 <button
                   className="text-[14px] font-medium text-red-500 hover:text-red-400 transition-colors"
                   type="button"
                 >
-                  Revoke
+                  {t("revoke")}
                 </button>
               )
             }
@@ -294,10 +297,10 @@ export function SecurityForm({
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-                API keys
+                {t("apiKeys")}
               </h3>
               <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-                Manage keys for programmatic access.
+                {t("apiKeysDescription")}
               </p>
             </div>
             <button
@@ -338,11 +341,11 @@ export function SecurityForm({
               <span className="flex items-center gap-3">
                 <span>
                   {showKeys[key.id]
-                    ? `${key.prefix}●●●●●●●●●●`
-                    : `${key.prefix}${"●".repeat(12)}`}
+                    ? `${key.prefix}••••••••••`
+                    : `${key.prefix}${"•".repeat(12)}`}
                 </span>
                 <span className="text-neutral-400">
-                  Last used: {key.lastUsed}
+                  {t("lastUsed")}: {key.lastUsed}
                 </span>
               </span>
             }
@@ -353,10 +356,10 @@ export function SecurityForm({
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Audit logs
+            {t("auditLogs")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Recent activity on your account.
+            {t("auditLogsDescription")}
           </p>
         </div>
         {MOCK_AUDIT_LOGS.map((log) => (

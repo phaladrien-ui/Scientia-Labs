@@ -1,5 +1,9 @@
+// next.config.ts
 import { withBotId } from "botid/next/config";
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin("./i18n.ts");
 
 const basePath = process.env.IS_DEMO === "1" ? "/demo" : "";
 
@@ -51,4 +55,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withBotId(nextConfig);
+export default withBotId(withNextIntl(nextConfig));

@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { unstable_serialize } from "swr/infinite";
 import { ScientiaLogo } from "@/components/chat/scientia-logo";
 import {
@@ -34,6 +35,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export function AppSidebar() {
+  const t = useTranslations("sidebar");
   const { data: session } = useSession();
   const user = session?.user;
   const router = useRouter();
@@ -68,7 +70,7 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </TooltipTrigger>
                 <TooltipContent className="hidden md:block" side="right">
-                  Open sidebar
+                  {t("openSidebar")}
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -93,10 +95,10 @@ export function AppSidebar() {
                     setOpenMobile(false);
                     router.push("/");
                   }}
-                  tooltip="New Chat"
+                  tooltip={t("newChat")}
                 >
                   <PenSquareIcon className="size-4" />
-                  <span>New chat</span>
+                  <span>{t("newChat")}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
@@ -110,10 +112,10 @@ export function AppSidebar() {
                     setOpenMobile(false);
                     router.push("/websites");
                   }}
-                  tooltip="Websites"
+                  tooltip={t("websites")}
                 >
                   <GlobeIcon className="size-4" />
-                  <span>Websites</span>
+                  <span>{t("websites")}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
@@ -123,11 +125,11 @@ export function AppSidebar() {
                     setOpenMobile(false);
                     window.open("/simulations", "_blank");
                   }}
-                  tooltip="Simulations"
+                  tooltip={t("simulations")}
                 >
                   <div className="flex items-center gap-2 flex-1">
                     <FlaskConicalIcon className="size-4" />
-                    <span>Simulations</span>
+                    <span>{t("simulations")}</span>
                   </div>
                   <svg
                     className="size-3 text-muted-foreground/30 group-hover/sim:text-muted-foreground/50 opacity-0 group-hover/sim:opacity-100 group-data-[collapsible=icon]:hidden transition-all ml-auto"

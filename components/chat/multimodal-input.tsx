@@ -7,6 +7,7 @@ import equal from "fast-deep-equal";
 import { ArrowUpIcon, BotIcon, ChevronDownIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
 import {
   type ChangeEvent,
   type Dispatch,
@@ -52,12 +53,6 @@ const scientiaModels = [
   { id: "smart", label: "Smart" },
   { id: "creative", label: "Creative" },
 ] as const;
-
-const placeholderMap: Record<string, string> = {
-  Learn: "Teach me...",
-  Solve: "Solve this for me...",
-  Code: "Build me...",
-};
 
 function PureMultimodalInput({
   chatId,
@@ -113,6 +108,7 @@ function PureMultimodalInput({
   const [scientiaModel, setScientiaModel] = useState("fast");
   const [modelMenuOpen, setModelMenuOpen] = useState(false);
   const { modeRef } = useActiveChat();
+  const t = useTranslations("chat");
 
   useEffect(() => {
     modeRef.current = mode;
@@ -317,18 +313,18 @@ function PureMultimodalInput({
   }, [handlePaste]);
 
   const placeholder = editingMessage
-    ? "Edit your message..."
+    ? t("editMessage")
     : isWebsites
-      ? "Describe the website you want..."
+      ? t("describeWebsite")
       : activeCategory
-        ? placeholderMap[activeCategory] || "Ask anything..."
-        : "Ask anything...";
+        ? t("askAnything")
+        : t("askAnything");
 
   return (
     <div className={cn("relative flex w-full flex-col gap-4", className)}>
       {editingMessage && onCancelEdit && (
         <div className="flex items-center gap-2 text-[12px] text-black dark:text-white">
-          <span>Editing message</span>
+          <span>{t("editingMessage")}</span>
           <button
             className="rounded px-1.5 py-0.5 text-black/50 dark:text-white/50 transition-colors hover:bg-muted hover:text-black dark:hover:text-white"
             onMouseDown={(e) => {
@@ -337,7 +333,7 @@ function PureMultimodalInput({
             }}
             type="button"
           >
-            Cancel
+            {t("cancel")}
           </button>
         </div>
       )}

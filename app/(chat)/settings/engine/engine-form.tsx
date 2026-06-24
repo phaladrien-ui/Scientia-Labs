@@ -1,7 +1,9 @@
+// app/(chat)/settings/engine/engine-form.tsx
 "use client";
 
 import { Cpu, Shield, Timer, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Card } from "@/components/chat/settings/shared/card";
 import { Row } from "@/components/chat/settings/shared/row";
@@ -15,6 +17,7 @@ export function EngineForm({
   initialPreferences: Record<string, unknown>;
 }) {
   const router = useRouter();
+  const t = useTranslations("settings");
 
   const [temperature, setTemperature] = useState(
     (initialPreferences.temperature as number) ?? 0.7
@@ -69,22 +72,22 @@ export function EngineForm({
 
   return (
     <div className="space-y-8">
-      <SectionLabel>Model Engine</SectionLabel>
+      <SectionLabel>{t("engine")}</SectionLabel>
 
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Precision & creativity
+            {t("precisionCreativity")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Control how Orion balances precision and creativity.
+            {t("precisionCreativityDescription")}
           </p>
         </div>
         <div className="p-5 space-y-5">
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-[14px] font-medium text-neutral-600 dark:text-neutral-400">
-                Temperature
+                {t("temperature")}
               </span>
               <span className="text-[14px] tabular-nums text-neutral-900 dark:text-neutral-100 font-medium">
                 {temperature}
@@ -104,14 +107,14 @@ export function EngineForm({
               value={temperature}
             />
             <div className="flex justify-between mt-1">
-              <span className="text-[12px] text-neutral-400">Precise</span>
-              <span className="text-[12px] text-neutral-400">Creative</span>
+              <span className="text-[12px] text-neutral-400">{t("precise")}</span>
+              <span className="text-[12px] text-neutral-400">{t("creative")}</span>
             </div>
           </div>
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-[14px] font-medium text-neutral-600 dark:text-neutral-400">
-                Speed vs Quality
+                {t("speedVsQuality")}
               </span>
               <span className="text-[14px] tabular-nums text-neutral-900 dark:text-neutral-100 font-medium">
                 {speedQuality}%
@@ -131,8 +134,8 @@ export function EngineForm({
               value={speedQuality}
             />
             <div className="flex justify-between mt-1">
-              <span className="text-[12px] text-neutral-400">Speed</span>
-              <span className="text-[12px] text-neutral-400">Quality</span>
+              <span className="text-[12px] text-neutral-400">{t("speed")}</span>
+              <span className="text-[12px] text-neutral-400">{t("quality")}</span>
             </div>
           </div>
         </div>
@@ -141,15 +144,15 @@ export function EngineForm({
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Context & sampling
+            {t("contextSampling")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Fine-tune how Orion processes and generates responses.
+            {t("contextSamplingDescription")}
           </p>
         </div>
         <div className="p-5 space-y-5">
           <div>
-            <UsageBar label="Max context" total={32_000} used={maxContext} />
+            <UsageBar label={t("maxContext")} total={32_000} used={maxContext} />
             <input
               className="w-full h-1.5 rounded-full appearance-none bg-neutral-200 dark:bg-neutral-700 accent-neutral-900 dark:accent-neutral-100 cursor-pointer mt-2"
               max="32000"
@@ -167,7 +170,7 @@ export function EngineForm({
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-[14px] font-medium text-neutral-600 dark:text-neutral-400">
-                Repetition penalty
+                {t("repetitionPenalty")}
               </span>
               <span className="text-[14px] tabular-nums text-neutral-900 dark:text-neutral-100 font-medium">
                 {repetitionPenalty}
@@ -190,7 +193,7 @@ export function EngineForm({
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-[14px] font-medium text-neutral-600 dark:text-neutral-400">
-                Top-P (nucleus sampling)
+                {t("topP")}
               </span>
               <span className="text-[14px] tabular-nums text-neutral-900 dark:text-neutral-100 font-medium">
                 {topP}
@@ -216,17 +219,17 @@ export function EngineForm({
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Features
+            {t("features")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Enable or disable core engine capabilities.
+            {t("featuresDescription")}
           </p>
         </div>
         <Row
           action={
             <Toggle
               checked={deepReasoning}
-              label="Deep reasoning"
+              label={t("deepReasoning")}
               onChange={(v) => {
                 setDeepReasoning(v);
                 save({ ...prefs, deepReasoning: v });
@@ -234,14 +237,14 @@ export function EngineForm({
             />
           }
           icon={Cpu}
-          label="Deep reasoning"
-          value="Multi-step reasoning for complex tasks"
+          label={t("deepReasoning")}
+          value={t("deepReasoningDescription")}
         />
         <Row
           action={
             <Toggle
               checked={streaming}
-              label="Streaming"
+              label={t("streaming")}
               onChange={(v) => {
                 setStreaming(v);
                 save({ ...prefs, streaming: v });
@@ -249,14 +252,14 @@ export function EngineForm({
             />
           }
           icon={Zap}
-          label="Streaming"
-          value="Display responses in real-time"
+          label={t("streaming")}
+          value={t("streamingDescription")}
         />
         <Row
           action={
             <Toggle
               checked={cacheEnabled}
-              label="Response cache"
+              label={t("responseCache")}
               onChange={(v) => {
                 setCacheEnabled(v);
                 save({ ...prefs, cacheEnabled: v });
@@ -264,25 +267,25 @@ export function EngineForm({
             />
           }
           icon={Timer}
-          label="Response cache"
-          value="Cache frequent responses"
+          label={t("responseCache")}
+          value={t("responseCacheDescription")}
         />
       </Card>
 
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Cost control
+            {t("costControl")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Set a monthly spending limit for compute.
+            {t("costControlDescription")}
           </p>
         </div>
         <div className="p-5">
           <div className="flex items-center gap-3">
             <Shield className="size-4 text-neutral-400 shrink-0" />
             <span className="text-[14px] text-neutral-600 dark:text-neutral-400">
-              Monthly compute limit
+              {t("monthlyComputeLimit")}
             </span>
             <div className="flex items-center gap-2 ml-auto">
               <span className="text-[14px] text-neutral-400">$</span>

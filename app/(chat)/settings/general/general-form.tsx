@@ -1,4 +1,4 @@
-// components/chat/settings/general/general-form.tsx
+// app/(chat)/settings/general/general-form.tsx
 "use client";
 
 import {
@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -109,9 +110,12 @@ export function GeneralForm({
 }) {
   const router = useRouter();
   const { setTheme, theme } = useTheme();
-  const { formatDate, locale, timezone } = useIntl();
+  const { formatDate, timezone } = useIntl();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { mutate } = useSWRConfig();
+  const currentLocale = useLocale();
+  const [selectedLocale, setSelectedLocale] = useState(currentLocale);
+  const t = useTranslations("settings");
 
   const [bio, setBio] = useState(user.bio ?? "");
   const [image, setImage] = useState(user.image ?? "");
@@ -121,6 +125,12 @@ export function GeneralForm({
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [name, setName] = useState(user.name ?? "");
   const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
+
+  function changeLocale(newLocale: string) {
+    setSelectedLocale(newLocale);
+    document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000`;
+    window.location.reload();
+  }
 
   async function savePrefs(data: Record<string, unknown>) {
     try {
@@ -186,16 +196,16 @@ export function GeneralForm({
 
   return (
     <div className="space-y-8">
-      <SectionLabel>General</SectionLabel>
+      <SectionLabel>{t("general")}</SectionLabel>
 
       {/* Profile */}
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Profile
+            {t("profile")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Your photo, name, and bio.
+            {t("profileDescription")}
           </p>
         </div>
         <div className="px-5 py-5">
@@ -206,7 +216,7 @@ export function GeneralForm({
                   <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
                 ) : image ? (
                   <button
-                    aria-label="View photo"
+                    aria-label={t("viewPhoto")}
                     className="block h-20 w-20 rounded-2xl overflow-hidden ring-1 ring-neutral-200 dark:ring-neutral-700 hover:ring-neutral-400 dark:hover:ring-neutral-500 transition-all cursor-zoom-in"
                     onClick={() => setLightboxOpen(true)}
                     type="button"
@@ -225,7 +235,7 @@ export function GeneralForm({
                   </div>
                 )}
                 <button
-                  aria-label="Upload photo"
+                  aria-label={t("uploadPhoto")}
                   className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-neutral-900 text-white shadow-md hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200 transition-colors cursor-pointer"
                   onClick={() => fileInputRef.current?.click()}
                   type="button"
@@ -245,7 +255,7 @@ export function GeneralForm({
                 onClick={() => fileInputRef.current?.click()}
                 type="button"
               >
-                Change
+                {t("change")}
               </button>
               {image && (
                 <button
@@ -253,7 +263,7 @@ export function GeneralForm({
                   onClick={handleRemovePhoto}
                   type="button"
                 >
-                  Remove
+                  {t("remove")}
                 </button>
               )}
             </div>
@@ -275,7 +285,7 @@ export function GeneralForm({
                         setIsEditingName(false);
                       }
                     }}
-                    placeholder="Your name"
+                    placeholder={t("setYourName")}
                     value={name}
                   />
                   <button
@@ -286,7 +296,7 @@ export function GeneralForm({
                     }}
                     type="button"
                   >
-                    Save
+                    {t("save")}
                   </button>
                 </div>
               ) : (
@@ -296,7 +306,7 @@ export function GeneralForm({
                   type="button"
                 >
                   <p className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-                    {name || "Set your name"}
+                    {name || t("setYourName")}
                   </p>
                   <Pencil className="size-3.5 text-neutral-300 opacity-0 group-hover:opacity-100 transition-opacity dark:text-neutral-600" />
                 </button>
@@ -317,7 +327,7 @@ export function GeneralForm({
                         setIsEditingBio(false);
                       }
                     }}
-                    placeholder="Write a short bio…"
+                    placeholder={t("addBio")}
                     rows={2}
                     value={bio}
                   />
@@ -329,7 +339,7 @@ export function GeneralForm({
                     }}
                     type="button"
                   >
-                    Save
+                    {t("save")}
                   </button>
                 </div>
               ) : (
@@ -339,7 +349,7 @@ export function GeneralForm({
                   type="button"
                 >
                   <p className="text-[16px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
-                    {bio || "Add a bio…"}
+                    {bio || t("addBio")}
                   </p>
                 </button>
               )}
@@ -355,7 +365,7 @@ export function GeneralForm({
         </div>
         <Row
           icon={Calendar}
-          label="Member since"
+          label={t("memberSince")}
           value={formatDate(user.createdAt ?? null)}
         />
       </Card>
@@ -364,22 +374,37 @@ export function GeneralForm({
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Localization
+            {t("localization")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Detected from your system.
+            {t("localizationDescription")}
           </p>
         </div>
         <Row
+          action={
+            <select
+              className="rounded-lg border border-neutral-200 bg-transparent px-2.5 py-1.5 text-[14px] text-neutral-900 dark:border-neutral-700 dark:text-neutral-100"
+              onChange={(e) => changeLocale(e.target.value)}
+              value={selectedLocale}
+            >
+              <option value="en">English</option>
+              <option value="fr">Français</option>
+              <option value="zh">中文</option>
+            </select>
+          }
           icon={Globe}
-          label="Language"
+          label={t("language")}
           value={
-            locale === "fr" ? "Français" : locale === "en" ? "English" : locale
+            selectedLocale === "fr"
+              ? "Français"
+              : selectedLocale === "zh"
+                ? "中文"
+                : "English"
           }
         />
         <Row
           icon={Clock}
-          label="Timezone"
+          label={t("timezone")}
           value={formatTimezoneLabel(timezone)}
         />
       </Card>
@@ -388,10 +413,10 @@ export function GeneralForm({
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
-            Appearance
+            {t("appearance")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Choose how Orion looks.
+            {t("appearanceDescription")}
           </p>
         </div>
         <Row
@@ -401,22 +426,22 @@ export function GeneralForm({
               onChange={(e) => {
                 setTheme(e.target.value);
                 savePrefs({
-                  language: locale,
+                  language: selectedLocale,
                   theme: e.target.value,
                   timezone,
                 });
               }}
               value={theme}
             >
-              <option value="system">System</option>
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
+              <option value="system">{t("system")}</option>
+              <option value="light">{t("light")}</option>
+              <option value="dark">{t("dark")}</option>
             </select>
           }
           icon={Monitor}
-          label="Theme"
+          label={t("theme")}
           value={
-            theme === "system" ? "System" : theme === "dark" ? "Dark" : "Light"
+            theme === "system" ? t("system") : theme === "dark" ? t("dark") : t("light")
           }
         />
       </Card>
@@ -425,19 +450,19 @@ export function GeneralForm({
       <Card>
         <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <h3 className="text-[16px] font-semibold text-red-600 dark:text-red-400">
-            Danger Zone
+            {t("dangerZone")}
           </h3>
           <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Irreversible actions.
+            {t("dangerZoneDescription")}
           </p>
         </div>
         <div className="px-5 py-4 flex items-center justify-between">
           <div>
             <p className="text-[14px] font-medium text-neutral-900 dark:text-neutral-100">
-              Delete all chats
+              {t("deleteAllChats")}
             </p>
             <p className="text-[13px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-              Permanently delete all your chat history.
+              {t("deleteAllChatsDescription")}
             </p>
           </div>
           <button
@@ -445,7 +470,7 @@ export function GeneralForm({
             onClick={() => setShowDeleteAllDialog(true)}
             type="button"
           >
-            Delete All
+            {t("deleteAll")}
           </button>
         </div>
       </Card>
@@ -453,16 +478,15 @@ export function GeneralForm({
       <AlertDialog onOpenChange={setShowDeleteAllDialog} open={showDeleteAllDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete all chats?</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteAllConfirmTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete all
-              your chats and remove them from our servers.
+              {t("deleteAllConfirmDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteAll}>
-              Delete All
+              {t("deleteAll")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
