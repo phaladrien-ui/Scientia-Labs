@@ -1,3 +1,4 @@
+// components/chat/settings/general/general-form.tsx
 "use client";
 
 import {
@@ -14,9 +15,23 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useRef, useState } from "react";
+import { toast } from "sonner";
+import { useSWRConfig } from "swr";
+import { unstable_serialize } from "swr/infinite";
 import { Card } from "@/components/chat/settings/shared/card";
 import { Row } from "@/components/chat/settings/shared/row";
 import { SectionLabel } from "@/components/chat/settings/shared/section-label";
+import { getChatHistoryPaginationKey } from "@/components/chat/sidebar-history";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useIntl } from "@/components/intl-provider";
 
 function formatTimezoneLabel(tz: string): string {
@@ -47,11 +62,15 @@ function Lightbox({
   src: string;
 }) {
   return (
-    <button
+    <div
       aria-label="Close lightbox"
       className="fixed inset-0 z-50 flex justify-center bg-black/80 backdrop-blur-sm p-8 w-full cursor-default"
       onClick={onClose}
-      type="button"
+      onKeyDown={(e) => {
+        if (e.key === "Escape") onClose();
+      }}
+      role="button"
+      tabIndex={0}
     >
       <button
         aria-label="Close"
@@ -70,7 +89,7 @@ function Lightbox({
           width={256}
         />
       </span>
-    </button>
+    </div>
   );
 }
 
@@ -92,6 +111,7 @@ export function GeneralForm({
   const { setTheme, theme } = useTheme();
   const { formatDate, locale, timezone } = useIntl();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { mutate } = useSWRConfig();
 
   const [bio, setBio] = useState(user.bio ?? "");
   const [image, setImage] = useState(user.image ?? "");
@@ -100,6 +120,7 @@ export function GeneralForm({
   const [isUploading, setIsUploading] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [name, setName] = useState(user.name ?? "");
+  const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
 
   async function savePrefs(data: Record<string, unknown>) {
     try {
@@ -151,6 +172,17 @@ export function GeneralForm({
     setImage("");
     saveProfile({ image: "" });
   }
+
+  const handleDeleteAll = () => {
+    setShowDeleteAllDialog(false);
+    mutate(unstable_serialize(getChatHistoryPaginationKey), [], {
+      revalidate: false,
+    });
+    fetch(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/history`, {
+      method: "DELETE",
+    });
+    toast.success("All chats deleted");
+  };
 
   return (
     <div className="space-y-8">
@@ -388,6 +420,53 @@ export function GeneralForm({
           }
         />
       </Card>
+
+      {/* Danger Zone */}
+      <Card>
+        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
+          <h3 className="text-[16px] font-semibold text-red-600 dark:text-red-400">
+            Danger Zone
+          </h3>
+          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+            Irreversible actions.
+          </p>
+        </div>
+        <div className="px-5 py-4 flex items-center justify-between">
+          <div>
+            <p className="text-[14px] font-medium text-neutral-900 dark:text-neutral-100">
+              Delete all chats
+            </p>
+            <p className="text-[13px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+              Permanently delete all your chat history.
+            </p>
+          </div>
+          <button
+            className="rounded-lg bg-red-600 px-4 py-2 text-[13px] font-medium text-white hover:bg-red-700 transition-colors"
+            onClick={() => setShowDeleteAllDialog(true)}
+            type="button"
+          >
+            Delete All
+          </button>
+        </div>
+      </Card>
+
+      <AlertDialog onOpenChange={setShowDeleteAllDialog} open={showDeleteAllDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete all chats?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete all
+              your chats and remove them from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteAll}>
+              Delete All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

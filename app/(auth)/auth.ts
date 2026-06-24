@@ -1,3 +1,4 @@
+// app/(auth)/auth.ts
 import { compare } from "bcrypt-ts";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -105,7 +106,7 @@ export const {
           return null;
         }
 
-        return { ...u, type: "regular" };
+        return { id: u.id, email: u.email, name: u.name, type: "regular" };
       },
     }),
     Credentials({

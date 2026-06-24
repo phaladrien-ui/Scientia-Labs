@@ -1,3 +1,4 @@
+// components/chat/sidebar-user-nav.tsx
 "use client";
 
 import {
@@ -54,7 +55,6 @@ export function SidebarUserNav({ user }: { user: NextAuthUser }) {
   const isGuest = guestRegex.test(data?.user?.email ?? "");
   const displayName = getDisplayName(user);
 
-  // CORRECTION ICI : Vérifier si la session est undefined ou si status n'est pas "authenticated"
   if (status !== "authenticated") {
     return (
       <SidebarMenu>
@@ -123,7 +123,7 @@ export function SidebarUserNav({ user }: { user: NextAuthUser }) {
             <div className="space-y-0.5">
               <DropdownMenuItem
                 className="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] cursor-pointer hover:bg-sidebar-accent/50 transition-colors"
-                onClick={() => router.push("/settings/profile")}
+                onClick={() => router.push("/settings/general")}
               >
                 <User className="size-4 text-sidebar-foreground/50" />
                 <span>View profile</span>
@@ -131,7 +131,7 @@ export function SidebarUserNav({ user }: { user: NextAuthUser }) {
 
               <DropdownMenuItem
                 className="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] cursor-pointer hover:bg-sidebar-accent/50 transition-colors"
-                onClick={() => router.push("/settings")}
+                onClick={() => router.push("/settings/general")}
               >
                 <Settings2 className="size-4 text-sidebar-foreground/50" />
                 <span>Settings</span>

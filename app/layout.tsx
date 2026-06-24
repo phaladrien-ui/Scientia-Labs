@@ -1,3 +1,4 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
@@ -76,6 +77,8 @@ export default function RootLayout({
         >
           <SessionProvider
             basePath={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/auth`}
+            refetchInterval={5}
+            refetchOnWindowFocus={true}
           >
             <IntlProvider>
               <TooltipProvider>{children}</TooltipProvider>

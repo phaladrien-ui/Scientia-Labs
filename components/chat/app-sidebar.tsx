@@ -6,14 +6,10 @@ import {
   GlobeIcon,
   PanelLeftIcon,
   PenSquareIcon,
-  TrashIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import type { User } from "next-auth";
-import { useState } from "react";
-import { toast } from "sonner";
-import { useSWRConfig } from "swr";
+import { useSession } from "next-auth/react";
 import { unstable_serialize } from "swr/infinite";
 import { ScientiaLogo } from "@/components/chat/scientia-logo";
 import {
@@ -35,183 +31,126 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
-export function AppSidebar({ user }: { user: User | undefined }) {
+export function AppSidebar() {
+  const { data: session } = useSession();
+  const user = session?.user;
   const router = useRouter();
   const pathname = usePathname();
   const { setOpenMobile, toggleSidebar } = useSidebar();
-  const { mutate } = useSWRConfig();
-  const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
 
   const isChat = pathname === "/" || pathname.startsWith("/chat");
   const isWebsites = pathname.startsWith("/websites");
 
-  const handleDeleteAll = () => {
-    setShowDeleteAllDialog(false);
-    router.replace("/");
-    mutate(unstable_serialize(getChatHistoryPaginationKey), [], {
-      revalidate: false,
-    });
-    fetch(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/history`, {
-      method: "DELETE",
-    });
-    toast.success("All chats deleted");
-  };
-
   return (
-    <>
-      <Sidebar collapsible="icon">
-        <SidebarHeader className="pb-0 pt-3">
-          <SidebarMenu>
-            <SidebarMenuItem className="flex flex-row items-center justify-between">
-              <div className="group/logo relative flex items-center justify-center">
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="pb-0 pt-3">
+        <SidebarMenu>
+          <SidebarMenuItem className="flex flex-row items-center justify-between">
+            <div className="group/logo relative flex items-center justify-center">
+              <SidebarMenuButton
+                asChild
+                className="size-16 !px-0 items-center justify-center group-data-[collapsible=icon]:group-hover/logo:opacity-0"
+                tooltip="Scientia Labs"
+              >
+                <Link href="/" onClick={() => setOpenMobile(false)}>
+                  <ScientiaLogo className="-mt-1" size={56} />
+                </Link>
+              </SidebarMenuButton>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SidebarMenuButton
+                    className="pointer-events-none absolute inset-0 size-16 opacity-0 group-data-[collapsible=icon]:pointer-events-auto group-data-[collapsible=icon]:group-hover/logo:opacity-100"
+                    onClick={() => toggleSidebar()}
+                  >
+                    <PanelLeftIcon className="size-4" />
+                  </SidebarMenuButton>
+                </TooltipTrigger>
+                <TooltipContent className="hidden md:block" side="right">
+                  Open sidebar
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <div className="group-data-[collapsible=icon]:hidden">
+              <SidebarTrigger className="text-black/60 dark:text-white transition-colors duration-150 hover:text-black dark:hover:text-white" />
+            </div>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup className="pt-1 relative z-10">
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
                 <SidebarMenuButton
-                  asChild
-                  className="size-16 !px-0 items-center justify-center group-data-[collapsible=icon]:group-hover/logo:opacity-0"
-                  tooltip="Scientia Labs"
+                  className={`h-8 rounded-lg px-2 text-[12px] !font-normal text-sidebar-foreground/50 dark:text-white transition-colors duration-150 ${
+                    isChat
+                      ? "bg-gray-100 dark:bg-sidebar-accent/50"
+                      : "hover:bg-gray-100 dark:hover:bg-sidebar-accent/50 hover:text-sidebar-foreground dark:hover:text-white"
+                  }`}
+                  onClick={() => {
+                    setOpenMobile(false);
+                    router.push("/");
+                  }}
+                  tooltip="New Chat"
                 >
-                  <Link href="/" onClick={() => setOpenMobile(false)}>
-                    <ScientiaLogo className="-mt-1" size={56} />
-                  </Link>
+                  <PenSquareIcon className="size-4" />
+                  <span>New chat</span>
                 </SidebarMenuButton>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <SidebarMenuButton
-                      className="pointer-events-none absolute inset-0 size-16 opacity-0 group-data-[collapsible=icon]:pointer-events-auto group-data-[collapsible=icon]:group-hover/logo:opacity-100"
-                      onClick={() => toggleSidebar()}
-                    >
-                      <PanelLeftIcon className="size-4" />
-                    </SidebarMenuButton>
-                  </TooltipTrigger>
-                  <TooltipContent className="hidden md:block" side="right">
-                    Open sidebar
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-              <div className="group-data-[collapsible=icon]:hidden">
-                <SidebarTrigger className="text-black/60 dark:text-white transition-colors duration-150 hover:text-black dark:hover:text-white" />
-              </div>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup className="pt-1 relative z-10">
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    className={`h-8 rounded-lg px-2 text-[12px] !font-normal text-sidebar-foreground/50 dark:text-white transition-colors duration-150 ${
-                      isChat
-                        ? "bg-gray-100 dark:bg-sidebar-accent/50"
-                        : "hover:bg-gray-100 dark:hover:bg-sidebar-accent/50 hover:text-sidebar-foreground dark:hover:text-white"
-                    }`}
-                    onClick={() => {
-                      setOpenMobile(false);
-                      router.push("/");
-                    }}
-                    tooltip="New Chat"
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  className={`h-8 rounded-lg px-2 text-[12px] !font-normal text-sidebar-foreground/50 dark:text-white transition-colors duration-150 ${
+                    isWebsites
+                      ? "bg-gray-100 dark:bg-sidebar-accent/50"
+                      : "hover:bg-gray-100 dark:hover:bg-sidebar-accent/50 hover:text-sidebar-foreground dark:hover:text-white"
+                  }`}
+                  onClick={() => {
+                    setOpenMobile(false);
+                    router.push("/websites");
+                  }}
+                  tooltip="Websites"
+                >
+                  <GlobeIcon className="size-4" />
+                  <span>Websites</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  className="h-8 rounded-lg px-2 text-[12px] !font-normal text-sidebar-foreground/50 dark:text-white transition-colors duration-150 hover:bg-gray-100 dark:hover:bg-sidebar-accent/50 hover:text-sidebar-foreground dark:hover:text-white group/sim"
+                  onClick={() => {
+                    setOpenMobile(false);
+                    window.open("/simulations", "_blank");
+                  }}
+                  tooltip="Simulations"
+                >
+                  <div className="flex items-center gap-2 flex-1">
+                    <FlaskConicalIcon className="size-4" />
+                    <span>Simulations</span>
+                  </div>
+                  <svg
+                    className="size-3 text-muted-foreground/30 group-hover/sim:text-muted-foreground/50 opacity-0 group-hover/sim:opacity-100 group-data-[collapsible=icon]:hidden transition-all ml-auto"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2.5"
+                    viewBox="0 0 24 24"
                   >
-                    <PenSquareIcon className="size-4" />
-                    <span>New chat</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    className={`h-8 rounded-lg px-2 text-[12px] !font-normal text-sidebar-foreground/50 dark:text-white transition-colors duration-150 ${
-                      isWebsites
-                        ? "bg-gray-100 dark:bg-sidebar-accent/50"
-                        : "hover:bg-gray-100 dark:hover:bg-sidebar-accent/50 hover:text-sidebar-foreground dark:hover:text-white"
-                    }`}
-                    onClick={() => {
-                      setOpenMobile(false);
-                      router.push("/websites");
-                    }}
-                    tooltip="Websites"
-                  >
-                    <GlobeIcon className="size-4" />
-                    <span>Websites</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    className="h-8 rounded-lg px-2 text-[12px] !font-normal text-sidebar-foreground/50 dark:text-white transition-colors duration-150 hover:bg-gray-100 dark:hover:bg-sidebar-accent/50 hover:text-sidebar-foreground dark:hover:text-white group/sim"
-                    onClick={() => {
-                      setOpenMobile(false);
-                      window.open("/simulations", "_blank");
-                    }}
-                    tooltip="Simulations"
-                  >
-                    <div className="flex items-center gap-2 flex-1">
-                      <FlaskConicalIcon className="size-4" />
-                      <span>Simulations</span>
-                    </div>
-                    <svg
-                      className="size-3 text-muted-foreground/30 group-hover/sim:text-muted-foreground/50 opacity-0 group-hover/sim:opacity-100 group-data-[collapsible=icon]:hidden transition-all ml-auto"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2.5"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M7 17L17 7M17 7H9M17 7V15" />
-                    </svg>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                {user && (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      className="rounded-lg px-2 text-[12px] !font-normal text-sidebar-foreground/50 dark:text-white transition-colors duration-150 hover:bg-gray-100 dark:hover:bg-sidebar-accent/50 hover:text-sidebar-foreground dark:hover:text-white hover:text-destructive dark:hover:text-destructive"
-                      onClick={() => setShowDeleteAllDialog(true)}
-                      tooltip="Delete All Chats"
-                    >
-                      <TrashIcon className="size-4" />
-                      <span>Delete all</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-          <SidebarHistory user={user} />
-        </SidebarContent>
-        <SidebarFooter className="border-t border-black/10 dark:border-white/10 pt-2 pb-3 relative z-10">
-          {user && <SidebarUserNav user={user} />}
-        </SidebarFooter>
-        <SidebarRail />
-      </Sidebar>
-
-      <AlertDialog
-        onOpenChange={setShowDeleteAllDialog}
-        open={showDeleteAllDialog}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete all chats?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete all
-              your chats and remove them from our servers.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteAll}>
-              Delete All
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+                    <path d="M7 17L17 7M17 7H9M17 7V15" />
+                  </svg>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarHistory user={user} />
+      </SidebarContent>
+      <SidebarFooter className="border-t border-black/10 dark:border-white/10 pt-2 pb-3 relative z-10">
+        {user && <SidebarUserNav user={user} />}
+      </SidebarFooter>
+      <SidebarRail />
+    </Sidebar>
   );
 }

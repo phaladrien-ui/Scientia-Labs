@@ -1,10 +1,11 @@
+// components/chat/sidebar-history.tsx
 "use client";
 
 import { isToday, isYesterday, subMonths, subWeeks } from "date-fns";
 import { motion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import type { User } from "next-auth";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import useSWRInfinite from "swr/infinite";
 import {
@@ -114,6 +115,12 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     fetcher,
     { fallbackData: [], revalidateOnFocus: false }
   );
+
+  useEffect(() => {
+    if (user) {
+      mutate();
+    }
+  }, [user?.id, mutate]);
 
   const router = useRouter();
   const [deleteId, setDeleteId] = useState<string | null>(null);
