@@ -199,7 +199,7 @@ export async function POST(request: Request) {
 
     const modelMessages = await convertToModelMessages(uiMessages);
 
-    // DÉTECTION SITE : forcer l'appel au tool
+    // DÉTECTION SITE
     const textPart = message?.parts?.find((p) => p.type === "text");
     const userText =
       (textPart && "text" in textPart ? textPart.text : "") || "";
@@ -226,7 +226,7 @@ export async function POST(request: Request) {
       } as any);
     }
 
-    // MODE REASONING : forcer le raisonnement
+    // MODE REASONING
     if (mode === "reasoning") {
       modelMessages.push({
         role: "system",
@@ -243,6 +243,7 @@ export async function POST(request: Request) {
           system: systemPrompt({ requestHints, supportsTools, mode }),
           messages: modelMessages,
           stopWhen: stepCountIs(5),
+          toolChoice: "auto",
           experimental_activeTools:
             isReasoningModel && !supportsTools
               ? []
@@ -265,7 +266,7 @@ export async function POST(request: Request) {
             }),
           },
           tools: {
-            calculate,
+            calculate: calculate({ dataStream }),
             getWeather,
             webSearch,
             newsSearch,

@@ -2,7 +2,7 @@
 
 /**
  * Scientia Labs — Computation Engine
- * Module Algèbre : résolution d'équations, systèmes linéaires, polynômes
+ * Module Algèbre : résolution d'équations, systèmes linéaires, polynômes, arithmétique
  */
 
 import { StepRecorder } from "../core/step-recorder";
@@ -16,9 +16,6 @@ export class AlgebraModule {
     this.stepRecorder = stepRecorder;
   }
 
-  /**
-   * Point d'entrée du module algèbre
-   */
   async execute(parsed: ParsedExpression): Promise<ComputationResult> {
     switch (parsed.type) {
       case "solve":
@@ -34,10 +31,6 @@ export class AlgebraModule {
     }
   }
 
-  /**
-   * Résout une équation polynomiale simple
-   * Supporte : ax² + bx + c = 0, ax + b = 0
-   */
   private solveEquation(parsed: ParsedExpression): ComputationResult {
     const expr = parsed.expression;
     this.stepRecorder.add({
@@ -46,7 +39,6 @@ export class AlgebraModule {
       outputLatex: `Analyzing: ${expr}`,
     });
 
-    // Détecter équation quadratique : ax² + bx + c = 0
     const quadraticMatch = expr.match(
       /([+-]?\d*\.?\d*)\s*\*?\s*x\s*\^\s*2\s*([+-]\s*\d*\.?\d*)\s*\*?\s*x\s*([+-]\s*\d*\.?\d*)\s*=\s*0/
     );
@@ -55,7 +47,6 @@ export class AlgebraModule {
       return this.solveQuadratic(quadraticMatch);
     }
 
-    // Détecter équation linéaire : ax + b = 0
     const linearMatch = expr.match(
       /([+-]?\d*\.?\d*)\s*\*?\s*x\s*([+-]\s*\d*\.?\d*)\s*=\s*0/
     );
@@ -67,9 +58,6 @@ export class AlgebraModule {
     throw new Error("Could not parse equation. Supported formats: ax² + bx + c = 0 or ax + b = 0");
   }
 
-  /**
-   * Résout ax² + bx + c = 0
-   */
   private solveQuadratic(match: RegExpMatchArray): ComputationResult {
     const a = parseFloat(match[1]) || 1;
     const b = parseFloat(match[2].replace(/\s/g, "")) || 0;
@@ -108,11 +96,7 @@ export class AlgebraModule {
         result: `x₁ = ${x1}, x₂ = ${x2}`,
         resultLatex: `x_1 = ${x1},\\quad x_2 = ${x2}`,
         steps: this.stepRecorder.getAll(),
-        metadata: {
-          duration: 0,
-          stepCount: this.stepRecorder.count,
-          confidence: 1.0,
-        },
+        metadata: { duration: 0, stepCount: this.stepRecorder.count, confidence: 1.0 },
       };
     }
 
@@ -133,15 +117,10 @@ export class AlgebraModule {
         result: `x = ${x} (double)`,
         resultLatex: `x = ${x}\\text{ (double root)}`,
         steps: this.stepRecorder.getAll(),
-        metadata: {
-          duration: 0,
-          stepCount: this.stepRecorder.count,
-          confidence: 1.0,
-        },
+        metadata: { duration: 0, stepCount: this.stepRecorder.count, confidence: 1.0 },
       };
     }
 
-    // Discriminant négatif : racines complexes
     const realPart = -b / (2 * a);
     const imagPart = Math.sqrt(-discriminant) / (2 * a);
 
@@ -159,17 +138,10 @@ export class AlgebraModule {
       result: `x₁ = ${realPart} + ${imagPart}i, x₂ = ${realPart} - ${imagPart}i`,
       resultLatex: `x_1 = ${realPart} + ${imagPart}i,\\quad x_2 = ${realPart} - ${imagPart}i`,
       steps: this.stepRecorder.getAll(),
-      metadata: {
-        duration: 0,
-        stepCount: this.stepRecorder.count,
-        confidence: 1.0,
-      },
+      metadata: { duration: 0, stepCount: this.stepRecorder.count, confidence: 1.0 },
     };
   }
 
-  /**
-   * Résout ax + b = 0
-   */
   private solveLinear(match: RegExpMatchArray): ComputationResult {
     const a = parseFloat(match[1]) || 1;
     const b = parseFloat(match[2].replace(/\s/g, "")) || 0;
@@ -194,17 +166,10 @@ export class AlgebraModule {
       result: `x = ${-b / a}`,
       resultLatex: `x = ${-b / a}`,
       steps: this.stepRecorder.getAll(),
-      metadata: {
-        duration: 0,
-        stepCount: this.stepRecorder.count,
-        confidence: 1.0,
-      },
+      metadata: { duration: 0, stepCount: this.stepRecorder.count, confidence: 1.0 },
     };
   }
 
-  /**
-   * Résout un système de 2 équations linéaires
-   */
   private solveSystem(parsed: ParsedExpression): ComputationResult {
     this.stepRecorder.add({
       description: "Parse system of equations",
@@ -215,22 +180,48 @@ export class AlgebraModule {
     throw new Error("System solver not yet implemented");
   }
 
-  /**
-   * Évalue une expression numérique simple
-   */
   private evaluateExpression(parsed: ParsedExpression): ComputationResult {
+    const expr = parsed.expression;
+
     this.stepRecorder.add({
-      description: "Evaluate expression",
-      inputLatex: parsed.expression,
+      description: "Evaluate arithmetic expression",
+      inputLatex: expr,
       outputLatex: "Computing...",
     });
 
-    throw new Error("Numerical evaluator not yet implemented");
+    // Nettoyer l'expression
+    const sanitized = expr
+      .replace(/\^/g, "**")
+      .replace(/×/g, "*")
+      .replace(/÷/g, "/")
+      .replace(/\s+/g, "");
+
+    // Vérifier que l'expression ne contient que des caractères arithmétiques
+    if (!/^[\d+\-*/().**]+$/.test(sanitized)) {
+      throw new Error(
+        "Expression contains non-arithmetic characters. For equations use type='solve', for derivatives use type='derivative'."
+      );
+    }
+
+    const result = Function(`"use strict"; return (${sanitized})`)();
+
+    this.stepRecorder.add({
+      description: "Compute result",
+      inputLatex: expr,
+      outputLatex: String(result),
+    });
+
+    return {
+      success: true,
+      expression: expr,
+      type: "evaluate",
+      result: String(result),
+      resultLatex: String(result),
+      steps: this.stepRecorder.getAll(),
+      metadata: { duration: 0, stepCount: this.stepRecorder.count, confidence: 1.0 },
+    };
   }
 
-  /**
-   * Simplifie une expression symbolique
-   */
   private simplifyExpression(parsed: ParsedExpression): ComputationResult {
     this.stepRecorder.add({
       description: "Simplify expression",
@@ -238,6 +229,6 @@ export class AlgebraModule {
       outputLatex: "Simplifying...",
     });
 
-    throw new Error("Symbolic simplifier not yet implemented");
+    throw new Error("Simplification not yet implemented in algebra module. Use the symbolic module.");
   }
 }

@@ -16,9 +16,6 @@ export class AnalysisModule {
     this.stepRecorder = stepRecorder;
   }
 
-  /**
-   * Point d'entrée du module analyse
-   */
   async execute(parsed: ParsedExpression): Promise<ComputationResult> {
     switch (parsed.type) {
       case "derivative":
@@ -34,10 +31,6 @@ export class AnalysisModule {
     }
   }
 
-  /**
-   * Calcule la dérivée d'un polynôme
-   * Supporte : ax^n + bx^m + ... + c
-   */
   private computeDerivative(parsed: ParsedExpression): ComputationResult {
     const expr = parsed.expression;
     const variable = parsed.variable || "x";
@@ -48,7 +41,6 @@ export class AnalysisModule {
       outputLatex: "Identifying terms...",
     });
 
-    // Parser les termes du polynôme
     const terms = this.parsePolynomialTerms(expr);
 
     if (terms.length === 0) {
@@ -62,7 +54,6 @@ export class AnalysisModule {
       const { coefficient, exponent } = term;
 
       if (exponent === 0) {
-        // Constante → dérivée = 0
         this.stepRecorder.add({
           description: `Derivative of constant ${coefficient}`,
           inputLatex: `\\frac{d}{d${variable}} ${coefficient}`,
@@ -94,7 +85,7 @@ export class AnalysisModule {
         description: `Derivative of ${coefficient}${variable}^${exponent}`,
         inputLatex: `\\frac{d}{d${variable}} ${coefficient}${variable}^{${exponent}}`,
         outputLatex: derivedLatex,
-        rule: `d/dx(x^n) = n·x^(n-1)`,
+        rule: "d/dx(x^n) = n·x^(n-1)",
       });
     }
 
@@ -116,9 +107,6 @@ export class AnalysisModule {
     };
   }
 
-  /**
-   * Calcule l'intégrale indéfinie d'un polynôme
-   */
   private computeIntegral(parsed: ParsedExpression): ComputationResult {
     const expr = parsed.expression;
     const variable = parsed.variable || "x";
@@ -179,22 +167,12 @@ export class AnalysisModule {
       result,
       resultLatex,
       steps: this.stepRecorder.getAll(),
-      metadata: {
-        duration: 0,
-        stepCount: this.stepRecorder.count,
-        confidence: 1.0,
-      },
+      metadata: { duration: 0, stepCount: this.stepRecorder.count, confidence: 1.0 },
     };
   }
 
-  /**
-   * Calcule une limite simple
-   * Supporte : lim x→a (polynôme)
-   */
   private computeLimit(parsed: ParsedExpression): ComputationResult {
     const expr = parsed.expression;
-
-    // Format attendu : "f(x) as x→a" ou "f(x) when x=a"
     const limitMatch = expr.match(/^(.+?)\s+(?:as|when)\s+(\w+)\s*→\s*(-?[\d.]+)$/i);
 
     if (!limitMatch) {
@@ -204,7 +182,6 @@ export class AnalysisModule {
     const [, funcExpr, variable, targetStr] = limitMatch;
     const target = parseFloat(targetStr);
 
-    // Substitution directe pour les polynômes
     const substituted = funcExpr
       .replace(new RegExp(`${variable}\\^(\\d+)`, "g"), `Math.pow(${target}, $1)`)
       .replace(new RegExp(`${variable}`, "g"), `(${target})`);
@@ -231,17 +208,10 @@ export class AnalysisModule {
       result: String(result),
       resultLatex: `\\lim_{${variable} \\to ${target}} ${funcExpr} = ${result}`,
       steps: this.stepRecorder.getAll(),
-      metadata: {
-        duration: 0,
-        stepCount: this.stepRecorder.count,
-        confidence: 1.0,
-      },
+      metadata: { duration: 0, stepCount: this.stepRecorder.count, confidence: 1.0 },
     };
   }
 
-  /**
-   * Calcule une série de Taylor à l'ordre n autour d'un point
-   */
   private computeTaylor(parsed: ParsedExpression): ComputationResult {
     const expr = parsed.expression;
     const order = (parsed.params?.order as number) || 4;
@@ -253,7 +223,6 @@ export class AnalysisModule {
       outputLatex: "Computing derivatives...",
     });
 
-    // Pour l'instant, support basique pour sin(x), cos(x), e^x
     const taylorSeries: Record<string, string[]> = {
       sin: ["x", "x - x^3/6", "x - x^3/6 + x^5/120", "x - x^3/6 + x^5/120 - x^7/5040"],
       cos: ["1", "1 - x^2/2", "1 - x^2/2 + x^4/24", "1 - x^2/2 + x^4/24 - x^6/720"],
@@ -279,11 +248,7 @@ export class AnalysisModule {
         result: series,
         resultLatex: `${funcName}(x) \\approx ${series}`,
         steps: this.stepRecorder.getAll(),
-        metadata: {
-          duration: 0,
-          stepCount: this.stepRecorder.count,
-          confidence: 1.0,
-        },
+        metadata: { duration: 0, stepCount: this.stepRecorder.count, confidence: 1.0 },
       };
     }
 
@@ -293,72 +258,82 @@ export class AnalysisModule {
   }
 
   /**
-   * Parse les termes d'un polynôme
-   * Retourne [{coefficient, exponent}, ...]
+   * Parse les termes d'un polynôme - CORRIGÉ
    */
   private parsePolynomialTerms(expr: string): Array<{ coefficient: number; exponent: number }> {
     const terms: Array<{ coefficient: number; exponent: number }> = [];
 
-    // Normaliser l'expression
-    const normalized = expr
-      .replace(/\s/g, "")
-      .replace(/-/g, "+-")
-      .replace(/\+{2,}/g, "+")
-      .replace(/^\++/, "");
+    // Normaliser
+    let normalized = expr
+      .replace(/\s+/g, "")
+      .replace(/\*/g, "")
+      .replace(/--/g, "+")
+      .replace(/\+-/g, "-")
+      .replace(/^\+/, "");
+
+    if (!normalized.startsWith("-")) {
+      normalized = "+" + normalized;
+    }
+
+    normalized = normalized.replace(/-/g, "+-");
 
     const termStrings = normalized.split("+").filter((t) => t.length > 0);
 
     for (const term of termStrings) {
-      // Cas : constante seule (ex: 5 ou -3)
-      if (/^-?\d+\.?\d*$/.test(term)) {
-        terms.push({ coefficient: parseFloat(term), exponent: 0 });
+      const isNegative = term.startsWith("-");
+      const cleanTerm = isNegative ? term.substring(1) : term;
+
+      if (cleanTerm.length === 0) continue;
+
+      // Constante pure
+      if (/^\d+\.?\d*$/.test(cleanTerm)) {
+        const val = parseFloat(cleanTerm);
+        terms.push({ coefficient: isNegative ? -val : val, exponent: 0 });
         continue;
       }
 
-      // Cas : ax ou x (exposant 1)
-      if (/^-?\d*\.?\d*[a-zA-Z]$/.test(term) && !term.includes("^")) {
-        const coeffMatch = term.match(/^(-?\d*\.?\d*)/);
-        const coeff = coeffMatch && coeffMatch[1] !== "" && coeffMatch[1] !== "-"
-          ? parseFloat(coeffMatch[1])
-          : term.startsWith("-") ? -1 : 1;
+      // ax^n
+      const powerMatch = cleanTerm.match(/^(\d*\.?\d*)([a-zA-Z])\^(\d+)$/);
+      if (powerMatch) {
+        let coeff = powerMatch[1] === "" ? 1 : parseFloat(powerMatch[1]);
+        if (isNegative) coeff = -coeff;
+        const exp = parseInt(powerMatch[3]);
+        terms.push({ coefficient: coeff, exponent: exp });
+        continue;
+      }
+
+      // ax
+      const linearMatch = cleanTerm.match(/^(\d*\.?\d*)([a-zA-Z])$/);
+      if (linearMatch) {
+        let coeff = linearMatch[1] === "" ? 1 : parseFloat(linearMatch[1]);
+        if (isNegative) coeff = -coeff;
         terms.push({ coefficient: coeff, exponent: 1 });
         continue;
       }
 
-      // Cas : ax^n
-      const match = term.match(/^(-?\d*\.?\d*)\*?[a-zA-Z]\^(-?\d+)$/);
-      if (match) {
-        const coeff = match[1] === "" || match[1] === "-" 
-          ? (match[1] === "-" ? -1 : 1) 
-          : parseFloat(match[1]);
-        const exp = parseInt(match[2]);
-        terms.push({ coefficient: coeff, exponent: exp });
+      // Juste la variable
+      const varMatch = cleanTerm.match(/^([a-zA-Z])$/);
+      if (varMatch) {
+        terms.push({ coefficient: isNegative ? -1 : 1, exponent: 1 });
         continue;
       }
+    }
 
-      // Cas : x^n
-      const simpleMatch = term.match(/^(-?)[a-zA-Z]\^(-?\d+)$/);
-      if (simpleMatch) {
-        const coeff = simpleMatch[1] === "-" ? -1 : 1;
-        const exp = parseInt(term.match(/\^(-?\d+)$/)![1]);
-        terms.push({ coefficient: coeff, exponent: exp });
-        continue;
+    if (terms.length === 0) {
+      const num = parseFloat(expr);
+      if (!isNaN(num)) {
+        terms.push({ coefficient: num, exponent: 0 });
       }
     }
 
     return terms;
   }
 
-  /**
-   * Évalue une expression mathématique simple de manière sécurisée
-   */
   private safeEval(expr: string): number {
-    // Remplacer les fonctions mathématiques
     const sanitized = expr
       .replace(/Math\.pow\(/g, "Math.pow(")
       .replace(/\^/g, "**");
 
-    // Vérification finale de sécurité
     if (/[^0-9+\-*/().%\sMath.pow]/.test(sanitized.replace(/Math\.pow/g, ""))) {
       throw new Error("Expression contains unauthorized functions");
     }

@@ -10,6 +10,7 @@ import { useDataStream } from "./data-stream-provider";
 import { Greeting } from "./greeting";
 import { GreetingWebsites } from "./greeting-websites";
 import { PreviewMessage, ThinkingMessage } from "./message";
+import { ScientificExecutionTrace } from "./scientific-execution-trace";
 
 type MessagesProps = {
   addToolApprovalResponse: UseChatHelpers<ChatMessage>["addToolApprovalResponse"];
@@ -56,7 +57,7 @@ function PureMessages({
     hasSentMessage,
     reset,
   } = useMessages({ status });
-  useDataStream();
+  const { scientificTrace } = useDataStream();
 
   const prevChatIdRef = useRef(chatId);
   useEffect(() => {
@@ -119,6 +120,18 @@ function PureMessages({
               }
             />
           ))}
+          {scientificTrace && (
+            <div className="-mt-3">
+              <ScientificExecutionTrace
+                confidence={scientificTrace.confidence}
+                duration={scientificTrace.duration}
+                engineName={scientificTrace.engineName}
+                expression={scientificTrace.expression}
+                result={scientificTrace.result}
+                steps={scientificTrace.steps}
+              />
+            </div>
+          )}
           {status === "submitted" && messages.at(-1)?.role !== "assistant" && (
             <ThinkingMessage />
           )}

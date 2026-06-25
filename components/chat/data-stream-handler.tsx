@@ -1,3 +1,4 @@
+// components/chat/data-stream-handler.tsx
 "use client";
 
 import { useEffect } from "react";
@@ -9,9 +10,8 @@ import { useDataStream } from "./data-stream-provider";
 import { getChatHistoryPaginationKey } from "./sidebar-history";
 
 export function DataStreamHandler() {
-  const { dataStream, setDataStream } = useDataStream();
+  const { dataStream, setDataStream, setScientificTrace } = useDataStream();
   const { mutate } = useSWRConfig();
-
   const { artifact, setArtifact, setMetadata } = useArtifact();
 
   useEffect(() => {
@@ -23,6 +23,11 @@ export function DataStreamHandler() {
     setDataStream([]);
 
     for (const delta of newDeltas) {
+      if (delta.type === "data-scientific-trace") {
+        setScientificTrace(delta.data);
+        continue;
+      }
+
       if (delta.type === "data-chat-title") {
         mutate(unstable_serialize(getChatHistoryPaginationKey));
         continue;
@@ -85,7 +90,7 @@ export function DataStreamHandler() {
         }
       });
     }
-  }, [dataStream, setArtifact, setMetadata, artifact, setDataStream, mutate]);
+  }, [dataStream, setArtifact, setMetadata, artifact, setDataStream, mutate, setScientificTrace]);
 
   return null;
 }

@@ -1,5 +1,4 @@
 // lib/types.ts
-
 import type { InferUITool, UIMessage } from "ai";
 import { z } from "zod";
 import type { ArtifactKind } from "@/components/chat/artifact";
@@ -49,6 +48,14 @@ export type CustomUIDataTypes = {
   clear: null;
   finish: null;
   "chat-title": string;
+  "scientific-trace": {
+    engineName: string;
+    expression: string;
+    steps: Array<{ description: string; status: "done" }>;
+    result: string;
+    duration: number;
+    confidence: number;
+  };
 };
 
 export type ChatMessage = UIMessage<

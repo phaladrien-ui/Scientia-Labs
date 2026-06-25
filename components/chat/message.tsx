@@ -17,7 +17,7 @@ import { DocumentPreview } from "./document-preview";
 import { MessageActions } from "./message-actions";
 import { MessageReasoning } from "./message-reasoning";
 import { PreviewAttachment } from "./preview-attachment";
-import { NewsSearchTool, WeatherTool, WebSearchTool } from "./tools";
+import { CalculateTool, NewsSearchTool, WeatherTool, WebSearchTool } from "./tools";
 
 const PurePreviewMessage = ({
   addToolApprovalResponse,
@@ -262,6 +262,10 @@ const PurePreviewMessage = ({
 
     if (type === "tool-newsSearch") {
       return <NewsSearchTool key={key} part={part} />;
+    }
+
+    if (type === "tool-calculate") {
+      return <CalculateTool key={key} part={part} />;
     }
 
     return null;
