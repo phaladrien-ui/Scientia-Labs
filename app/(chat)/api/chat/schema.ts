@@ -1,33 +1,34 @@
 import { z } from "zod";
 
-const textPartSchema = z.object({
-  type: z.enum(["text"]),
-  text: z.string().min(1).max(2000),
-});
+const partSchema = z.object({
+  type: z.string(),
+  text: z.string().optional(),
+  url: z.string().optional(),
+  name: z.string().optional(),
+  mediaType: z.string().optional(),
+}).passthrough();
 
-const filePartSchema = z.object({
-  type: z.enum(["file"]),
-  mediaType: z.enum(["image/jpeg", "image/png"]),
-  name: z.string().min(1).max(100),
-  url: z.string().url(),
-});
-
-const partSchema = z.union([textPartSchema, filePartSchema]);
+const attachmentSchema = z.object({
+  url: z.string(),
+  name: z.string(),
+  contentType: z.string(),
+}).passthrough();
 
 const userMessageSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
   role: z.enum(["user"]),
   parts: z.array(partSchema),
+  attachments: z.array(attachmentSchema).optional().default([]),
 });
 
 const toolApprovalMessageSchema = z.object({
   id: z.string(),
   role: z.enum(["user", "assistant"]),
-  parts: z.array(z.record(z.unknown())),
+  parts: z.array(partSchema),
 });
 
 export const postRequestBodySchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
   message: userMessageSchema.optional(),
   messages: z.array(toolApprovalMessageSchema).optional(),
   selectedChatModel: z.string(),

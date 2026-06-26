@@ -274,6 +274,7 @@
   "startTyping": "开始输入以搜索您的对话。",
   "searching": "搜索中...",
   "noResults": "未找到结果。请尝试其他搜索词。",
-  "loadingHistory": "正在加载对话..."
+  "loadingHistory": "正在加载对话...",
+  "title": "研究"
 }
 }

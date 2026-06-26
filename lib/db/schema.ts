@@ -65,7 +65,7 @@ export const vote = pgTable(
     isUpvoted: boolean("isUpvoted").notNull(),
   },
   (table) => ({
-    pk: primaryKey({ columns: [table.chatId, table.messageId] }),
+    pk: primaryKey({ name: "Vote_v2_pkey", columns: [table.chatId, table.messageId] }),
   })
 );
 
@@ -146,6 +146,22 @@ export const userSettings = pgTable("UserSettings", {
 });
 
 export type UserSettings = InferSelectModel<typeof userSettings>;
+
+// ============ MODULE FILES ============
+
+export const file = pgTable("File", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  userId: uuid("userId")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  type: text("type").notNull(),
+  size: text("size").notNull(),
+  data: text("data").notNull(),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+});
+
+export type DBFile = InferSelectModel<typeof file>;
 
 // ============ MODULE SIMULATIONS ============
 

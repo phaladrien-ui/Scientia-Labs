@@ -264,6 +264,16 @@ function PureMultimodalInput({
   const handleFileChange = useCallback(
     async (e: ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files || []);
+
+      const imageFiles = files.filter((f) => f.type.startsWith("image/"));
+      if (imageFiles.length > 0) {
+        toast.error(
+          "Images are not supported. Please upload PDF, CSV, TXT, JSON, Python, or other document files."
+        );
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+
       setUploadQueue(files.map((f) => f.name));
       try {
         const uploaded = (await Promise.all(files.map(uploadFile))).filter(
@@ -284,26 +294,13 @@ function PureMultimodalInput({
       const items = e.clipboardData?.items;
       if (!items) return;
       const imgs = Array.from(items).filter((i) => i.type.startsWith("image/"));
-      if (!imgs.length) return;
-      e.preventDefault();
-      setUploadQueue((p) => [...p, "Pasted image"]);
-      try {
-        const uploaded = (
-          await Promise.all(
-            imgs
-              .map((i) => i.getAsFile())
-              .filter((f): f is File => f !== null)
-              .map(uploadFile)
-          )
-        ).filter((a) => a?.url);
-        setAttachments((c) => [...c, ...(uploaded as Attachment[])]);
-      } catch {
-        toast.error("Failed to upload pasted image");
-      } finally {
-        setUploadQueue([]);
+      if (imgs.length > 0) {
+        e.preventDefault();
+        toast.error("Images are not supported. Please paste text or upload document files.");
+        return;
       }
     },
-    [setAttachments, uploadFile]
+    []
   );
 
   useEffect(() => {

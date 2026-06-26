@@ -274,6 +274,7 @@
   "startTyping": "Commencez à taper pour rechercher dans vos conversations.",
   "searching": "Recherche en cours...",
   "noResults": "Aucun résultat trouvé. Essayez un autre terme de recherche.",
-  "loadingHistory": "Chargement des conversations..."
+  "loadingHistory": "Chargement des conversations...",
+  "title": "Recherche"
 }
 }

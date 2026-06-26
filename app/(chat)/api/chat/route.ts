@@ -7,6 +7,8 @@ import {
   generateId,
   stepCountIs,
   streamText,
+  type ModelMessage,
+  type UIMessage,
 } from "ai";
 import { checkBotId } from "botid/server";
 import { after } from "next/server";
@@ -48,6 +50,18 @@ import type { ChatMessage } from "@/lib/types";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
 import { generateTitleFromUserMessage } from "../../actions";
 import { type PostRequestBody, postRequestBodySchema } from "./schema";
+import { extractTextFromFile } from "@/lib/files/extract";
+import { file } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+
+const client = postgres(process.env.POSTGRES_URL ?? "", {
+  max: 10,
+  idle_timeout: 30,
+  connect_timeout: 10,
+});
+const db = drizzle(client);
 
 export const maxDuration = 60;
 
@@ -61,13 +75,20 @@ function getStreamContext() {
 
 export { getStreamContext };
 
+async function getFileContent(fileId: string): Promise<{ name: string; type: string; data: string } | null> {
+  const [result] = await db.select().from(file).where(eq(file.id, fileId));
+  if (!result) return null;
+  return { name: result.name, type: result.type, data: result.data };
+}
+
 export async function POST(request: Request) {
   let requestBody: PostRequestBody;
 
   try {
     const json = await request.json();
     requestBody = postRequestBodySchema.parse(json);
-  } catch (_) {
+  } catch (error) {
+    console.error("Schema parse error:", error);
     return new ChatbotError("bad_request:api").toResponse();
   }
 
@@ -125,7 +146,7 @@ export async function POST(request: Request) {
         title: "New chat",
         visibility: selectedVisibilityType,
       });
-      titlePromise = generateTitleFromUserMessage({ message });
+      titlePromise = generateTitleFromUserMessage({ message: message as UIMessage });
     }
 
     let uiMessages: ChatMessage[];
@@ -166,6 +187,36 @@ export async function POST(request: Request) {
       ];
     }
 
+    // Extraction du texte des fichiers attachés depuis les parts de type "file"
+    let enhancedUserText = "";
+    const fileParts = message?.parts?.filter((p) => p.type === "file") ?? [];
+
+    if (fileParts.length > 0) {
+      const fileContents: string[] = [];
+
+      for (const part of fileParts) {
+        if (!("url" in part)) continue;
+        const fileId = (part.url as string).split("/").pop();
+        if (!fileId) continue;
+
+        const fileData = await getFileContent(fileId);
+        if (!fileData) continue;
+
+        const extracted = await extractTextFromFile(fileData.data, fileData.type);
+        fileContents.push(
+          `<document name="${part.name || fileData.name}" type="${part.mediaType || fileData.type}" url="${part.url}">\n${extracted}\n</document>`
+        );
+      }
+
+      if (fileContents.length > 0) {
+        enhancedUserText = "Documents joints :\n\n" + fileContents.join("\n\n") + "\n\n---\n\n";
+      }
+    }
+
+    const textPart = message?.parts?.find((p) => p.type === "text");
+    const userText = (textPart && "text" in textPart ? textPart.text : "") || "";
+    enhancedUserText += userText;
+
     const { longitude, latitude, city, country } = geolocation(request);
 
     const requestHints: RequestHints = {
@@ -183,7 +234,7 @@ export async function POST(request: Request) {
             id: message.id,
             role: "user",
             parts: message.parts,
-            attachments: [],
+            attachments: message.attachments ?? [],
             createdAt: new Date(),
           },
         ],
@@ -197,12 +248,32 @@ export async function POST(request: Request) {
     const supportsTools = capabilities?.tools === true;
     const sendReasoning = isReasoningModel || mode === "reasoning";
 
-    const modelMessages = await convertToModelMessages(uiMessages);
+    const enhancedUiMessages = uiMessages.map((msg, index) => {
+      if (index === uiMessages.length - 1 && msg.role === "user") {
+        return {
+          ...msg,
+          parts: msg.parts.map((part) => {
+            if (part.type === "text") {
+              return { ...part, text: enhancedUserText };
+            }
+            return part;
+          }),
+        };
+      }
+      return msg;
+    });
 
-    // DÉTECTION SITE
-    const textPart = message?.parts?.find((p) => p.type === "text");
-    const userText =
-      (textPart && "text" in textPart ? textPart.text : "") || "";
+    const modelMessages = await convertToModelMessages(enhancedUiMessages);
+
+    const filteredMessages = modelMessages.map((msg) => ({
+      ...msg,
+      content: Array.isArray((msg as { content: unknown }).content)
+        ? ((msg as { content: { type: string }[] }).content).filter(
+            (part: { type: string }) => part.type === "text"
+          )
+        : (msg as { content: unknown }).content,
+    })) as ModelMessage[];
+
     const siteKeywords = [
       "site",
       "landing page",
@@ -217,22 +288,21 @@ export async function POST(request: Request) {
     );
 
     if (isSiteRequest && supportsTools) {
-      modelMessages.push({
+      filteredMessages.push({
         role: "system",
         content:
           "CRITICAL: You MUST call createDocument with kind='site' and title='" +
           userText.slice(0, 100) +
           "'. Do NOT write HTML in chat. Do NOT use kind='code'. Call the tool NOW and then STOP.",
-      } as any);
+      } as ModelMessage);
     }
 
-    // MODE REASONING
     if (mode === "reasoning") {
-      modelMessages.push({
+      filteredMessages.push({
         role: "system",
         content:
           "CRITICAL: You MUST begin your response with <reasoning> tags. Write your step-by-step reasoning inside, then provide your final answer. Format: <reasoning>your reasoning here</reasoning> then your answer.",
-      } as any);
+      } as ModelMessage);
     }
 
     const stream = createUIMessageStream({
@@ -241,7 +311,7 @@ export async function POST(request: Request) {
         const result = streamText({
           model: getLanguageModel(chatModel),
           system: systemPrompt({ requestHints, supportsTools, mode }),
-          messages: modelMessages,
+          messages: filteredMessages,
           stopWhen: stepCountIs(5),
           toolChoice: "auto",
           experimental_activeTools:

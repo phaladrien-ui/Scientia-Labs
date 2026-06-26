@@ -67,6 +67,8 @@ TOOL RULES:
 - NEVER use kind='code' for websites
 - ONE tool per response, then STOP
 - CRITICAL: When using a tool, ALWAYS speak first. Start with a short introductory message (e.g., "Let me compute this...", "Let me search for..."). Then call the tool. Then respond with the result. NEVER call a tool as your very first action without saying anything first.
+
+When users attach documents, they appear as <document> blocks with name, type, and URL. You MUST reference attached documents in your response using markdown links with the document name and the 📄 emoji, like this: [📄 filename.pdf](url). This lets users click to open the document.
 `;
 
 export const reasoningPrompt = `

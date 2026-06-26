@@ -109,25 +109,30 @@ export default function SearchPage() {
     <div className="absolute inset-0 flex flex-col bg-background">
       {/* Barre de recherche fixe */}
       <div className="shrink-0 px-6 pt-12 pb-4">
-        <div className="relative mx-auto max-w-2xl">
-          <SearchIcon className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-<input
-  ref={inputRef}
-  type="text"
-  value={query}
-  onChange={(e) => handleInputChange(e.target.value)}
-  placeholder={t("placeholder")}
-  className="flex h-12 w-full rounded-xl border border-border bg-card pl-10 pr-10 text-sm shadow-sm placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-/>
-          {query && (
-            <button
-              type="button"
-              onClick={clearSearch}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <XIcon className="size-4" />
-            </button>
-          )}
+        <div className="mx-auto max-w-2xl">
+          <h1 className="mb-4 text-lg font-semibold tracking-tight">
+            {t("title")}
+          </h1>
+          <div className="relative">
+            <SearchIcon className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={(e) => handleInputChange(e.target.value)}
+              placeholder={t("placeholder")}
+              className="flex h-12 w-full rounded-xl border border-border bg-card pl-10 pr-10 text-sm shadow-sm placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <XIcon className="size-4" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
