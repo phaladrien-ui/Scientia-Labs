@@ -4,7 +4,8 @@
     "websites": "Websites",
     "simulations": "Simulations",
     "toggleSidebar": "Toggle sidebar",
-    "openSidebar": "Open sidebar"
+    "openSidebar": "Open sidebar",
+    "search": "Search"
   },
   "settings": {
     "title": "Settings",
@@ -267,5 +268,13 @@
 "debug": "Debug",
 "optimize": "Optimize",
 "deploy": "Deploy"
-  }
+  },
+"search": {
+  "placeholder": "Search your conversations...",
+  "startTyping": "Start typing to search through your conversations.",
+  "searching": "Searching...",
+  "noResults": "No results found. Try a different search term.",
+  "loadingHistory": "Loading conversations..."
 }
+}
+

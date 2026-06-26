@@ -6,12 +6,12 @@ import {
   GlobeIcon,
   PanelLeftIcon,
   PenSquareIcon,
+  SearchIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { unstable_serialize } from "swr/infinite";
 import { ScientiaLogo } from "@/components/chat/scientia-logo";
 import {
   getChatHistoryPaginationKey,
@@ -116,6 +116,23 @@ export function AppSidebar() {
                 >
                   <GlobeIcon className="size-4" />
                   <span>{t("websites")}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  className={`h-8 rounded-lg px-2 text-[12px] !font-normal text-sidebar-foreground/50 dark:text-white transition-colors duration-150 ${
+                    pathname === "/search"
+                      ? "bg-gray-100 dark:bg-sidebar-accent/50"
+                      : "hover:bg-gray-100 dark:hover:bg-sidebar-accent/50 hover:text-sidebar-foreground dark:hover:text-white"
+                  }`}
+                  onClick={() => {
+                    setOpenMobile(false);
+                    router.push("/search");
+                  }}
+                  tooltip={t("search")}
+                >
+                  <SearchIcon className="size-4" />
+                  <span>{t("search")}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>

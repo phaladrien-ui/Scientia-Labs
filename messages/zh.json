@@ -4,7 +4,8 @@
     "websites": "网站",
     "simulations": "模拟",
     "toggleSidebar": "切换侧边栏",
-    "openSidebar": "打开侧边栏"
+    "openSidebar": "打开侧边栏",
+    "search": "搜索"
   },
   "settings": {
     "title": "设置",
@@ -267,5 +268,12 @@
 "debug": "调试",
 "optimize": "优化",
 "deploy": "部署"
-  }
+  },
+"search": {
+  "placeholder": "搜索您的对话...",
+  "startTyping": "开始输入以搜索您的对话。",
+  "searching": "搜索中...",
+  "noResults": "未找到结果。请尝试其他搜索词。",
+  "loadingHistory": "正在加载对话..."
+}
 }
