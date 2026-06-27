@@ -9,7 +9,6 @@ import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
 import { MessageContent, MessageResponse } from "../ai-elements/message";
-import { Shimmer } from "../ai-elements/shimmer";
 import { Tool, ToolContent, ToolHeader, ToolOutput } from "../ai-elements/tool";
 import { useDataStream } from "./data-stream-provider";
 import { DocumentToolResult } from "./document";
@@ -17,7 +16,12 @@ import { DocumentPreview } from "./document-preview";
 import { MessageActions } from "./message-actions";
 import { MessageReasoning } from "./message-reasoning";
 import { PreviewAttachment } from "./preview-attachment";
-import { CalculateTool, NewsSearchTool, WeatherTool, WebSearchTool } from "./tools";
+import {
+  CalculateTool,
+  NewsSearchTool,
+  WeatherTool,
+  WebSearchTool,
+} from "./tools";
 
 const PurePreviewMessage = ({
   addToolApprovalResponse,
@@ -443,10 +447,12 @@ const PurePreviewMessage = ({
   );
 
   const content = isThinking ? (
-    <div className="flex h-[calc(13px*1.65)] items-center text-[13px] leading-[1.65]">
-      <Shimmer className="font-medium" duration={1}>
-        Thinking...
-      </Shimmer>
+    <div className="flex items-center gap-1.5 h-[calc(13px*1.65)] text-[13px] leading-[1.65]">
+      <span className="inline-flex items-center gap-0.5">
+        <span className="inline-block size-1.5 rounded-full bg-primary animate-bounce [animation-delay:0s] [animation-duration:0.4s]" />
+        <span className="inline-block size-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.1s] [animation-duration:0.4s]" />
+        <span className="inline-block size-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.2s] [animation-duration:0.4s]" />
+      </span>
     </div>
   ) : (
     <>
@@ -492,10 +498,12 @@ export const ThinkingMessage = () => {
       data-testid="message-assistant-loading"
     >
       <div className="flex items-start gap-3">
-        <div className="flex h-[calc(13px*1.65)] items-center text-[13px] leading-[1.65]">
-          <Shimmer className="font-medium" duration={1}>
-            Thinking...
-          </Shimmer>
+        <div className="flex items-center gap-1.5 h-[calc(13px*1.65)] text-[13px] leading-[1.65]">
+          <span className="inline-flex items-center gap-0.5">
+            <span className="inline-block size-1.5 rounded-full bg-primary animate-bounce [animation-delay:0s] [animation-duration:0.4s]" />
+            <span className="inline-block size-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.1s] [animation-duration:0.4s]" />
+            <span className="inline-block size-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.2s] [animation-duration:0.4s]" />
+          </span>
         </div>
       </div>
     </div>

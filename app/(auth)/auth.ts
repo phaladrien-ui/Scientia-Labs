@@ -7,6 +7,8 @@ import type { DefaultJWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
+import LinkedIn from "next-auth/providers/linkedin";
+import Twitter from "next-auth/providers/twitter";
 import postgres from "postgres";
 import { DUMMY_PASSWORD } from "@/lib/constants";
 import { createGuestUser, getUser } from "@/lib/db/queries";
@@ -34,6 +36,7 @@ declare module "next-auth" {
     id?: string;
     email?: string | null;
     type: UserType;
+    isLink?: boolean;
   }
 }
 
@@ -41,6 +44,10 @@ declare module "next-auth/jwt" {
   interface JWT extends DefaultJWT {
     id: string;
     type: UserType;
+    isLink?: boolean;
+    linkedProvider?: string;
+    linkedProfileId?: string;
+    linkedProfileName?: string;
   }
 }
 
@@ -74,6 +81,32 @@ export const {
           email: profile.email,
           name: profile.login,
           image: profile.avatar_url,
+          type: "regular" as const,
+        };
+      },
+    }),
+    LinkedIn({
+      clientId: process.env.AUTH_LINKEDIN_ID,
+      clientSecret: process.env.AUTH_LINKEDIN_SECRET,
+      profile(profile) {
+        return {
+          id: profile.sub,
+          email: profile.email,
+          name: profile.name,
+          image: profile.picture,
+          type: "regular" as const,
+        };
+      },
+    }),
+    Twitter({
+      clientId: process.env.AUTH_TWITTER_ID,
+      clientSecret: process.env.AUTH_TWITTER_SECRET,
+      profile(profile) {
+        return {
+          id: profile.data?.id,
+          email: profile.data?.email,
+          name: profile.data?.name,
+          image: profile.data?.profile_image_url,
           type: "regular" as const,
         };
       },
@@ -121,12 +154,25 @@ export const {
   callbacks: {
     async jwt({ token, user, account }) {
       if (user) {
-        token.id = user.id as string;
-        token.type = user.type;
+        // Si c'est une liaison de compte, on ne touche PAS à l'utilisateur
+        if (user.isLink) {
+          token.isLink = true;
+          token.linkedProvider = account?.provider ?? "";
+          token.linkedProfileId = user.id ?? "";
+          token.linkedProfileName = user.name ?? "";
+          // On ne retourne pas tout de suite pour ne pas perdre la session existante
+        } else {
+          token.id = user.id as string;
+          token.type = user.type;
+        }
       }
 
-      // Pour Google/GitHub : créer l'utilisateur en DB s'il n'existe pas
-      if (account?.provider === "google" || account?.provider === "github") {
+      // Créer l'utilisateur en DB UNIQUEMENT pour les connexions Google/GitHub
+      if (
+        !token.isLink &&
+        account?.provider &&
+        ["google", "github"].includes(account.provider)
+      ) {
         const email = token.email ?? "";
         if (email) {
           try {
@@ -163,6 +209,17 @@ export const {
       if (session.user) {
         session.user.id = token.id;
         session.user.type = token.type;
+
+        // Transmettre les infos de liaison au client
+        if (token.isLink) {
+          (session as unknown as Record<string, unknown>).isLink = true;
+          (session as unknown as Record<string, unknown>).linkedProvider =
+            token.linkedProvider;
+          (session as unknown as Record<string, unknown>).linkedProfileId =
+            token.linkedProfileId;
+          (session as unknown as Record<string, unknown>).linkedProfileName =
+            token.linkedProfileName;
+        }
       }
       return session;
     },

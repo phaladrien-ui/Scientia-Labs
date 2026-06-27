@@ -5,9 +5,13 @@ import {
   AtSign,
   Calendar,
   Clock,
+  ExternalLinkIcon,
+  GithubIcon,
   Globe,
+  LinkedinIcon,
   Monitor,
   Pencil,
+  TwitterIcon,
   Upload,
   X,
 } from "lucide-react";
@@ -23,6 +27,7 @@ import { Card } from "@/components/chat/settings/shared/card";
 import { Row } from "@/components/chat/settings/shared/row";
 import { SectionLabel } from "@/components/chat/settings/shared/section-label";
 import { getChatHistoryPaginationKey } from "@/components/chat/sidebar-history";
+import { useIntl } from "@/components/intl-provider";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,7 +38,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useIntl } from "@/components/intl-provider";
 
 function formatTimezoneLabel(tz: string): string {
   const offset =
@@ -63,24 +67,20 @@ function Lightbox({
   src: string;
 }) {
   return (
-    <div
+    <button
       aria-label="Close lightbox"
       className="fixed inset-0 z-50 flex justify-center bg-black/80 backdrop-blur-sm p-8 w-full cursor-default"
       onClick={onClose}
       onKeyDown={(e) => {
-        if (e.key === "Escape") onClose();
+        if (e.key === "Escape") {
+          onClose();
+        }
       }}
-      role="button"
-      tabIndex={0}
+      type="button"
     >
-      <button
-        aria-label="Close"
-        className="absolute top-4 right-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors cursor-pointer"
-        onClick={onClose}
-        type="button"
-      >
+      <span className="absolute top-4 right-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors cursor-pointer">
         <X className="size-5" />
-      </button>
+      </span>
       <span className="mt-[10vh] w-64 h-64 rounded-2xl overflow-hidden shadow-2xl pointer-events-none">
         <Image
           alt={alt}
@@ -90,7 +90,7 @@ function Lightbox({
           width={256}
         />
       </span>
-    </div>
+    </button>
   );
 }
 
@@ -125,10 +125,27 @@ export function GeneralForm({
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [name, setName] = useState(user.name ?? "");
   const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
+  const [linkSafetyDisabled, setLinkSafetyDisabled] = useState(
+    (initialPreferences.linkSafetyDisabled as boolean) ?? false
+  );
+
+  const linkedAccounts =
+    (initialPreferences.linkedAccounts as Record<
+      string,
+      { id: string; name: string }
+    >) ?? {};
 
   function changeLocale(newLocale: string) {
     setSelectedLocale(newLocale);
     document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000`;
+    savePrefs({
+      ...initialPreferences,
+      linkedAccounts,
+      language: newLocale,
+      theme,
+      timezone,
+      linkSafetyDisabled,
+    });
     window.location.reload();
   }
 
@@ -426,9 +443,12 @@ export function GeneralForm({
               onChange={(e) => {
                 setTheme(e.target.value);
                 savePrefs({
+                  ...initialPreferences,
+                  linkedAccounts,
                   language: selectedLocale,
                   theme: e.target.value,
                   timezone,
+                  linkSafetyDisabled,
                 });
               }}
               value={theme}
@@ -441,8 +461,196 @@ export function GeneralForm({
           icon={Monitor}
           label={t("theme")}
           value={
-            theme === "system" ? t("system") : theme === "dark" ? t("dark") : t("light")
+            theme === "system"
+              ? t("system")
+              : theme === "dark"
+                ? t("dark")
+                : t("light")
           }
+        />
+      </Card>
+
+      {/* Linked Accounts */}
+      <Card>
+        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
+          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
+            Comptes liés
+          </h3>
+          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+            Connectez vos comptes pour permettre à Scientia d'agir en votre nom.
+          </p>
+        </div>
+        <Row
+          action={
+            linkedAccounts.linkedin ? (
+              <button
+                className="text-[13px] text-red-500 hover:text-red-400 transition-colors"
+                onClick={() => {
+                  const { linkedin: _l, ...newLinked } = linkedAccounts;
+                  savePrefs({
+                    ...initialPreferences,
+                    linkedAccounts: newLinked,
+                    language: selectedLocale,
+                    theme,
+                    timezone,
+                    linkSafetyDisabled,
+                  });
+                }}
+                type="button"
+              >
+                Déconnecter
+              </button>
+            ) : (
+              <button
+                className="text-[13px] text-primary hover:text-primary/80 transition-colors"
+                onClick={() =>
+                  window.open(
+                    "/api/link/linkedin",
+                    "link-linkedin",
+                    "width=600,height=700"
+                  )
+                }
+                type="button"
+              >
+                Connecter
+              </button>
+            )
+          }
+          icon={LinkedinIcon}
+          label="LinkedIn"
+          value={
+            linkedAccounts.linkedin
+              ? `Connecté — ${linkedAccounts.linkedin.name}`
+              : "Non connecté"
+          }
+        />
+        <Row
+          action={
+            linkedAccounts.github ? (
+              <button
+                className="text-[13px] text-red-500 hover:text-red-400 transition-colors"
+                onClick={() => {
+                  const { github: _g, ...newLinked } = linkedAccounts;
+                  savePrefs({
+                    ...initialPreferences,
+                    linkedAccounts: newLinked,
+                    language: selectedLocale,
+                    theme,
+                    timezone,
+                    linkSafetyDisabled,
+                  });
+                }}
+                type="button"
+              >
+                Déconnecter
+              </button>
+            ) : (
+              <button
+                className="text-[13px] text-primary hover:text-primary/80 transition-colors"
+                onClick={() =>
+                  window.open(
+                    "/api/link/github",
+                    "link-github",
+                    "width=600,height=700"
+                  )
+                }
+                type="button"
+              >
+                Connecter
+              </button>
+            )
+          }
+          icon={GithubIcon}
+          label="GitHub"
+          value={
+            linkedAccounts.github
+              ? `Connecté — ${linkedAccounts.github.name}`
+              : "Non connecté"
+          }
+        />
+        <Row
+          action={
+            linkedAccounts.twitter ? (
+              <button
+                className="text-[13px] text-red-500 hover:text-red-400 transition-colors"
+                onClick={() => {
+                  const { twitter: _t, ...newLinked } = linkedAccounts;
+                  savePrefs({
+                    ...initialPreferences,
+                    linkedAccounts: newLinked,
+                    language: selectedLocale,
+                    theme,
+                    timezone,
+                    linkSafetyDisabled,
+                  });
+                }}
+                type="button"
+              >
+                Déconnecter
+              </button>
+            ) : (
+              <a
+                className="text-[13px] text-primary hover:text-primary/80 transition-colors"
+                href="/api/link/twitter"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Connecter
+              </a>
+            )
+          }
+          icon={TwitterIcon}
+          label="X"
+          value={
+            linkedAccounts.twitter
+              ? `Connecté — ${linkedAccounts.twitter.name}`
+              : "Non connecté"
+          }
+        />
+      </Card>
+
+      {/* Link Safety */}
+      <Card>
+        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
+          <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-neutral-100">
+            {t("linkSafety")}
+          </h3>
+          <p className="text-[14px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+            {t("linkSafetyDescription")}
+          </p>
+        </div>
+        <Row
+          action={
+            <button
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                linkSafetyDisabled
+                  ? "bg-neutral-300 dark:bg-neutral-600"
+                  : "bg-primary"
+              }`}
+              onClick={() => {
+                const newVal = !linkSafetyDisabled;
+                setLinkSafetyDisabled(newVal);
+                savePrefs({
+                  ...initialPreferences,
+                  linkedAccounts,
+                  language: selectedLocale,
+                  theme,
+                  timezone,
+                  linkSafetyDisabled: newVal,
+                });
+              }}
+              type="button"
+            >
+              <span
+                className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${
+                  linkSafetyDisabled ? "translate-x-1" : "translate-x-6"
+                }`}
+              />
+            </button>
+          }
+          icon={ExternalLinkIcon}
+          label={t("linkSafety")}
+          value={linkSafetyDisabled ? t("disabled") : t("enabled")}
         />
       </Card>
 
@@ -475,7 +683,10 @@ export function GeneralForm({
         </div>
       </Card>
 
-      <AlertDialog onOpenChange={setShowDeleteAllDialog} open={showDeleteAllDialog}>
+      <AlertDialog
+        onOpenChange={setShowDeleteAllDialog}
+        open={showDeleteAllDialog}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("deleteAllConfirmTitle")}</AlertDialogTitle>

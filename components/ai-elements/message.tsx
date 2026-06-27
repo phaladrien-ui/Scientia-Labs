@@ -1,3 +1,4 @@
+// components/ai-elements/message.tsx
 "use client";
 
 import type { UIMessage } from "ai";
@@ -30,6 +31,124 @@ import {
   useState,
 } from "react";
 import { Streamdown } from "streamdown";
+import type { LinkSafetyModalProps } from "streamdown";
+import { CheckIcon, CopyIcon, ExternalLinkIcon, XIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useLinkSafety } from "@/hooks/use-link-safety";
+
+function CustomLinkSafetyModal({ isOpen, onClose, onConfirm, url }: LinkSafetyModalProps) {
+  const t = useTranslations("linkSafety");
+  const [copied, setCopied] = useState(false);
+  const [dontAskAgain, setDontAskAgain] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {}
+  };
+
+  const handleConfirm = () => {
+    if (dontAskAgain) {
+      // Mettre à jour la préférence via l'API settings
+      fetch("/api/settings", {
+        body: JSON.stringify({
+          preferences: { linkSafetyDisabled: true },
+        }),
+        headers: { "Content-Type": "application/json" },
+        method: "PATCH",
+      });
+    }
+    onConfirm();
+    onClose();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/50 backdrop-blur-sm"
+      onClick={onClose}
+      role="button"
+      tabIndex={0}
+    >
+      <div
+        className="relative mx-4 flex w-full max-w-md flex-col gap-4 rounded-2xl border bg-background p-6 shadow-lg"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          className="absolute top-4 right-4 rounded-lg p-1 text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
+          onClick={onClose}
+          type="button"
+        >
+          <XIcon size={16} />
+        </button>
+
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2 font-semibold text-lg">
+            <ExternalLinkIcon size={20} />
+            <span>{t("title")}</span>
+          </div>
+          <p className="text-muted-foreground text-sm">
+            {t("description")}
+          </p>
+        </div>
+
+        <div className={`break-all rounded-xl bg-muted p-3 font-mono text-sm ${url.length > 100 ? "max-h-32 overflow-y-auto" : ""}`}>
+          {url}
+        </div>
+
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={dontAskAgain}
+            onChange={(e) => setDontAskAgain(e.target.checked)}
+            className="size-4 rounded border-border text-primary focus:ring-primary/20"
+          />
+          <span className="text-xs text-muted-foreground">{t("dontAskAgain")}</span>
+        </label>
+
+        <div className="flex gap-2">
+          <button
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl border bg-background px-4 py-2.5 font-medium text-sm transition-all hover:bg-muted"
+            onClick={handleCopy}
+            type="button"
+          >
+            {copied ? (
+              <>
+                <CheckIcon size={14} />
+                <span>{t("copied")}</span>
+              </>
+            ) : (
+              <>
+                <CopyIcon size={14} />
+                <span>{t("copyLink")}</span>
+              </>
+            )}
+          </button>
+          <button
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-medium text-primary-foreground text-sm transition-all hover:bg-primary/90"
+            onClick={handleConfirm}
+            type="button"
+          >
+            <ExternalLinkIcon size={14} />
+            <span>{t("openLink")}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export type MessageProps = HTMLAttributes<HTMLDivElement> & {
   from: UIMessage["role"];
@@ -205,7 +324,6 @@ export const MessageBranchContent = ({
     [children]
   );
 
-  // Use useEffect to update branches when they change
   useEffect(() => {
     if (branches.length !== childrenArray.length) {
       setBranches(childrenArray);
@@ -234,7 +352,6 @@ export const MessageBranchSelector = ({
 }: MessageBranchSelectorProps) => {
   const { totalBranches } = useMessageBranch();
 
-  // Don't render if there's only one branch
   if (totalBranches <= 1) {
     return null;
   }
@@ -323,16 +440,29 @@ export type MessageResponseProps = ComponentProps<typeof Streamdown>;
 const streamdownPlugins = { cjk, code, math, mermaid };
 
 export const MessageResponse = memo(
-  ({ className, ...props }: MessageResponseProps) => (
-    <Streamdown
-      className={cn(
-        "size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
-        className
-      )}
-      plugins={streamdownPlugins}
-      {...props}
-    />
-  ),
+  ({ className, ...props }: MessageResponseProps) => {
+    const linkSafetyEnabled = useLinkSafety();
+
+    const renderModal = useCallback(
+      (modalProps: LinkSafetyModalProps) => <CustomLinkSafetyModal {...modalProps} />,
+      []
+    );
+
+    return (
+      <Streamdown
+        className={cn(
+          "size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
+          className
+        )}
+        plugins={streamdownPlugins}
+        linkSafety={{
+          enabled: linkSafetyEnabled,
+          renderModal,
+        }}
+        {...props}
+      />
+    );
+  },
   (prevProps, nextProps) => prevProps.children === nextProps.children
 );
 

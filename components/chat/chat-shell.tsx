@@ -1,7 +1,6 @@
 // components/chat/chat-shell.tsx
 "use client";
 
-import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   AlertDialog,
@@ -78,6 +77,44 @@ export function ChatShellChat() {
 
   const isNewEmptyChat =
     !chatId || (chatId && messages.length === 0 && !isLoading);
+
+  if (isLoading && messages.length === 0) {
+    return (
+      <div className="flex h-dvh w-full items-center justify-center bg-white dark:bg-background">
+        <svg
+          className="size-10"
+          fill="none"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            className="text-muted/30"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          />
+          <path
+            className="text-primary"
+            d="M12 2a10 10 0 0 1 10 10"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="1.5"
+          >
+            <animateTransform
+              attributeName="transform"
+              dur="0.8s"
+              from="0 12 12"
+              repeatCount="indefinite"
+              to="360 12 12"
+              type="rotate"
+            />
+          </path>
+        </svg>
+      </div>
+    );
+  }
 
   return (
     <>

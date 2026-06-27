@@ -5,13 +5,16 @@ import {
   createUIMessageStream,
   createUIMessageStreamResponse,
   generateId,
+  type ModelMessage,
   stepCountIs,
   streamText,
-  type ModelMessage,
   type UIMessage,
 } from "ai";
 import { checkBotId } from "botid/server";
+import { eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
 import { after } from "next/server";
+import postgres from "postgres";
 import { createResumableStreamContext } from "resumable-stream";
 import { auth, type UserType } from "@/app/(auth)/auth";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
@@ -44,17 +47,14 @@ import {
   updateMessage,
 } from "@/lib/db/queries";
 import type { DBMessage } from "@/lib/db/schema";
+import { file } from "@/lib/db/schema";
 import { ChatbotError } from "@/lib/errors";
+import { extractTextFromFile } from "@/lib/files/extract";
 import { checkIpRateLimit } from "@/lib/ratelimit";
 import type { ChatMessage } from "@/lib/types";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
 import { generateTitleFromUserMessage } from "../../actions";
 import { type PostRequestBody, postRequestBodySchema } from "./schema";
-import { extractTextFromFile } from "@/lib/files/extract";
-import { file } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
 
 const client = postgres(process.env.POSTGRES_URL ?? "", {
   max: 10,
@@ -75,9 +75,13 @@ function getStreamContext() {
 
 export { getStreamContext };
 
-async function getFileContent(fileId: string): Promise<{ name: string; type: string; data: string } | null> {
+async function getFileContent(
+  fileId: string
+): Promise<{ name: string; type: string; data: string } | null> {
   const [result] = await db.select().from(file).where(eq(file.id, fileId));
-  if (!result) return null;
+  if (!result) {
+    return null;
+  }
   return { name: result.name, type: result.type, data: result.data };
 }
 
@@ -146,7 +150,9 @@ export async function POST(request: Request) {
         title: "New chat",
         visibility: selectedVisibilityType,
       });
-      titlePromise = generateTitleFromUserMessage({ message: message as UIMessage });
+      titlePromise = generateTitleFromUserMessage({
+        message: message as UIMessage,
+      });
     }
 
     let uiMessages: ChatMessage[];
@@ -193,28 +199,37 @@ export async function POST(request: Request) {
 
     if (fileParts.length > 0) {
       const fileContents: string[] = [];
+      const baseUrl =
+        process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
       for (const part of fileParts) {
-        if (!("url" in part)) continue;
         const fileId = (part.url as string).split("/").pop();
-        if (!fileId) continue;
+        if (!fileId) {
+          continue;
+        }
 
         const fileData = await getFileContent(fileId);
-        if (!fileData) continue;
+        if (!fileData) {
+          continue;
+        }
 
-        const extracted = await extractTextFromFile(fileData.data, fileData.type);
+        const extracted = await extractTextFromFile(
+          fileData.data,
+          fileData.type
+        );
         fileContents.push(
-          `<document name="${part.name || fileData.name}" type="${part.mediaType || fileData.type}" url="${part.url}">\n${extracted}\n</document>`
+          `<document name="${part.name || fileData.name}" type="${part.mediaType || fileData.type}" url="${baseUrl}${part.url}">\n${extracted}\n</document>`
         );
       }
 
       if (fileContents.length > 0) {
-        enhancedUserText = "Documents joints :\n\n" + fileContents.join("\n\n") + "\n\n---\n\n";
+        enhancedUserText = `Documents joints :\n\n${fileContents.join("\n\n")}\n\n---\n\n`;
       }
     }
 
     const textPart = message?.parts?.find((p) => p.type === "text");
-    const userText = (textPart && "text" in textPart ? textPart.text : "") || "";
+    const userText =
+      (textPart && "text" in textPart ? textPart.text : "") || "";
     enhancedUserText += userText;
 
     const { longitude, latitude, city, country } = geolocation(request);
@@ -268,7 +283,7 @@ export async function POST(request: Request) {
     const filteredMessages = modelMessages.map((msg) => ({
       ...msg,
       content: Array.isArray((msg as { content: unknown }).content)
-        ? ((msg as { content: { type: string }[] }).content).filter(
+        ? (msg as { content: { type: string }[] }).content.filter(
             (part: { type: string }) => part.type === "text"
           )
         : (msg as { content: unknown }).content,
@@ -290,10 +305,7 @@ export async function POST(request: Request) {
     if (isSiteRequest && supportsTools) {
       filteredMessages.push({
         role: "system",
-        content:
-          "CRITICAL: You MUST call createDocument with kind='site' and title='" +
-          userText.slice(0, 100) +
-          "'. Do NOT write HTML in chat. Do NOT use kind='code'. Call the tool NOW and then STOP.",
+        content: `CRITICAL: You MUST call createDocument with kind='site' and title='${userText.slice(0, 100)}'. Do NOT write HTML in chat. Do NOT use kind='code'. Call the tool NOW and then STOP.`,
       } as ModelMessage);
     }
 

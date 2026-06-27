@@ -1,6 +1,7 @@
 // i18n.ts
-import { getRequestConfig } from "next-intl/server";
+
 import { headers } from "next/headers";
+import { getRequestConfig } from "next-intl/server";
 
 export default getRequestConfig(async () => {
   let locale = "en";
@@ -14,8 +15,6 @@ export default getRequestConfig(async () => {
   } catch {
     locale = "en";
   }
-
-  console.log("i18n locale:", locale); // ← log pour debug
 
   return {
     locale,

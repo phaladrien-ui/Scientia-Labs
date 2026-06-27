@@ -161,7 +161,11 @@
     "spendingControlsDescription": "Set limits and alerts to control costs.",
     "monthlySpendingLimit": "Monthly spending limit",
     "alertAt": "Alert at",
-    "of": "of"
+    "of": "of",
+    "linkSafety": "Link safety warning",
+    "linkSafetyDescription": "Show a confirmation dialog before opening external links.",
+    "enabled": "Enabled",
+    "disabled": "Disabled"
   },
   "auth": {
     "login": "Login",
@@ -276,5 +280,13 @@
     "noResults": "No results found. Try a different search term.",
     "loadingHistory": "Loading conversations...",
     "title": "Research"
+  },
+  "linkSafety": {
+    "title": "Open external link?",
+    "description": "You're about to visit an external website.",
+    "copyLink": "Copy link",
+    "copied": "Copied",
+    "openLink": "Open link",
+    "dontAskAgain": "Don't show this message again"
   }
 }
