@@ -55,6 +55,15 @@ export function ChatShellWebsites() {
   );
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<{
+    src: string;
+    label: string;
+  } | null>(null);
+
+  useEffect(() => {
+    console.log("selectedTemplate changed:", selectedTemplate);
+  }, [selectedTemplate]);
+
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
   const { artifact, setArtifact } = useArtifact();
 
@@ -70,6 +79,7 @@ export function ChatShellWebsites() {
       setEditingMessage(null);
       setAttachments([]);
       setActiveCategory(null);
+      setSelectedTemplate(null);
     }
   }, [chatId, setArtifact]);
 
@@ -115,47 +125,58 @@ export function ChatShellWebsites() {
               className={`sticky bottom-0 z-1 mx-auto flex w-full max-w-3xl flex-col gap-2 border-t-0 bg-white dark:bg-background px-2 pb-3 md:px-4 md:pb-4 ${isNewEmptyChat ? "" : "mt-auto"}`}
             >
               {!isReadonly && (
-                <MultimodalInput
-                  activeCategory={activeCategory}
-                  attachments={attachments}
-                  chatId={chatId}
-                  editingMessage={editingMessage}
-                  input={input}
-                  isLoading={isLoading}
-                  isWebsites={true}
-                  messages={messages}
-                  onCancelEdit={() => {
-                    setEditingMessage(null);
-                    setInput("");
-                  }}
-                  onModelChange={setCurrentModelId}
-                  selectedModelId={currentModelId}
-                  selectedVisibilityType={visibilityType}
-                  sendMessage={
-                    editingMessage
-                      ? async () => {
-                          const msg = editingMessage;
-                          setEditingMessage(null);
-                          await submitEditedMessage({
-                            message: msg,
-                            text: input,
-                            setMessages,
-                            regenerate,
-                          });
-                          setInput("");
-                        }
-                      : sendMessage
-                  }
-                  setActiveCategory={setActiveCategory}
-                  setAttachments={setAttachments}
-                  setInput={setInput}
-                  setMessages={setMessages}
-                  status={status}
-                  stop={stop}
-                />
+                <>
+                  {console.log(
+                    "PASSING selectedTemplate to MultimodalInput:",
+                    selectedTemplate
+                  )}
+                  <MultimodalInput
+                    activeCategory={activeCategory}
+                    attachments={attachments}
+                    chatId={chatId}
+                    editingMessage={editingMessage}
+                    input={input}
+                    isLoading={isLoading}
+                    isWebsites={true}
+                    messages={messages}
+                    onCancelEdit={() => {
+                      setEditingMessage(null);
+                      setInput("");
+                    }}
+                    onClearTemplate={() => setSelectedTemplate(null)}
+                    onModelChange={setCurrentModelId}
+                    selectedModelId={currentModelId}
+                    selectedTemplate={selectedTemplate}
+                    selectedVisibilityType={visibilityType}
+                    sendMessage={
+                      editingMessage
+                        ? async () => {
+                            const msg = editingMessage;
+                            setEditingMessage(null);
+                            await submitEditedMessage({
+                              message: msg,
+                              text: input,
+                              setMessages,
+                              regenerate,
+                            });
+                            setInput("");
+                          }
+                        : sendMessage
+                    }
+                    setActiveCategory={setActiveCategory}
+                    setAttachments={setAttachments}
+                    setInput={setInput}
+                    setMessages={setMessages}
+                    status={status}
+                    stop={stop}
+                  />
+                </>
               )}
               {messages.length === 0 && !isLoading && (
-                <InspirationGallery />
+                <InspirationGallery
+                  onSelect={setSelectedTemplate}
+                  selectedTemplate={selectedTemplate}
+                />
               )}
             </div>
           </div>

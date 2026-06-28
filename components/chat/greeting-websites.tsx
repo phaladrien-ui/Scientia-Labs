@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 
 export const GreetingWebsites = () => {
-  const t = useTranslations("chat");
+  const t = useTranslations("websites");
 
   return (
     <div className="flex flex-col items-center px-4" key="overview">
@@ -16,7 +16,7 @@ export const GreetingWebsites = () => {
         transition={{ delay: 0.35, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
         <h1 className="text-2xl text-black dark:text-white/90 md:text-3xl">
-          {t("websitesGreeting")}
+          {t("greeting")}
         </h1>
       </motion.div>
     </div>
