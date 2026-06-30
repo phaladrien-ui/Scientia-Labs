@@ -8,13 +8,13 @@ import { ArrowDownIcon, DownloadIcon } from "lucide-react";
 import { useCallback } from "react";
 import { StickToBottom, useStickToBottomContext } from "use-stick-to-bottom";
 
-// ✅ Correction 1 : On exclut "children" du type pour éviter le conflit
 export type ConversationProps = Omit<
   ComponentProps<typeof StickToBottom>,
   "children"
 >;
 
 export const Conversation = ({ className, ...props }: ConversationProps) => (
+  // @ts-expect-error - StickToBottom children type mismatch with React 19
   <StickToBottom
     className={cn("relative flex-1 overflow-y-hidden", className)}
     initial="smooth"
@@ -24,7 +24,6 @@ export const Conversation = ({ className, ...props }: ConversationProps) => (
   />
 );
 
-// ✅ Correction 2 : Même logique pour Content
 export type ConversationContentProps = Omit<
   ComponentProps<typeof StickToBottom.Content>,
   "children"
@@ -34,6 +33,7 @@ export const ConversationContent = ({
   className,
   ...props
 }: ConversationContentProps) => (
+  // @ts-expect-error - StickToBottom.Content children type mismatch with React 19
   <StickToBottom.Content
     className={cn("flex flex-col gap-8 p-4", className)}
     {...props}
@@ -111,10 +111,9 @@ export interface ConversationMessage {
   content: string;
 }
 
-// ✅ Correction 3 : On exclut "onClick" ET "children" puisqu'on les gère manuellement
 export type ConversationDownloadProps = Omit<
   ComponentProps<typeof Button>,
-  "onClick" | "children"
+  "onClick"
 > & {
   messages: ConversationMessage[];
   filename?: string;
