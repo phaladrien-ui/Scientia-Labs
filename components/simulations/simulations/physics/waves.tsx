@@ -123,6 +123,7 @@ export function Waves({ isRunning }: { isRunning: boolean }) {
     }
 
     function draw() {
+      if (!ctx) return;
       const cur = curRef.current;
       const scaleX = W / SIZE;
       const scaleY = H / SIZE;
