@@ -342,11 +342,11 @@ const DocumentContent = ({ document }: { document: Document }) => {
     isCurrentVersion: true,
     currentVersionIndex: 0,
     status: artifact.status,
-    saveContent: () => null,
-    suggestions: [],
+    saveContent: (_content: string, _debounce: boolean) => {},
+    suggestions: [] as any[],
   };
 
-  const handleSaveContent = () => null;
+  const handleSaveContent = (_content: string) => {};
 
   return (
     <div className={cn(containerClassName, "relative")}>
