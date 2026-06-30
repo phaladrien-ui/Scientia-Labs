@@ -87,12 +87,12 @@ async function saveLinkedAccount(
       .set({
         preferences: { ...prefs, linkedAccounts: newLinked },
         updatedAt: new Date(),
-      })
+      } as any)
       .where(eq(userSettings.userId, userId));
   } else {
     await db.insert(userSettings).values({
       userId,
       preferences: { linkedAccounts: newLinked },
-    });
+    } as any);
   }
 }
