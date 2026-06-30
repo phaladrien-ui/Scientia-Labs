@@ -85,7 +85,7 @@ export const searchArtifact = {
       </div>
     );
   },
-  actions: [],
-  toolbar: [],
+  actions: [] as any[],
+  toolbar: [] as any[],
   onStreamPart: () => {},
 };
