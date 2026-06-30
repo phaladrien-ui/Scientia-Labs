@@ -53,12 +53,12 @@ function PureWebsiteMultimodalInput({
   stop,
   attachments,
   setAttachments,
-  messages,
-  setMessages,
+  messages: _messages,
+  setMessages: _setMessages,
   sendMessage,
-  editingMessage,
-  onCancelEdit,
-  isLoading,
+  editingMessage: _editingMessage,
+  onCancelEdit: _onCancelEdit,
+  isLoading: _isLoading,
   selectedTemplate,
   onClearTemplate,
 }: {
@@ -97,7 +97,9 @@ function PureWebsiteMultimodalInput({
         textareaRef.current?.focus();
         hasAutoFocused.current = true;
       }, 100);
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+      };
     }
   }, [width]);
 
@@ -123,6 +125,12 @@ function PureWebsiteMultimodalInput({
   const [uploadQueue, setUploadQueue] = useState<string[]>([]);
 
   const submitForm = useCallback(() => {
+    window.history.pushState(
+      {},
+      "",
+      `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/websites/chat/${chatId}`
+    );
+
     const systemPrompt = selectedTemplate
       ? getTemplateSystemPrompt(selectedTemplate.label, tw)
       : null;
@@ -148,7 +156,9 @@ function PureWebsiteMultimodalInput({
     setLocalStorageInput("");
     setInput("");
     onClearTemplate?.();
-    if (width && width > 768) textareaRef.current?.focus();
+    if (width && width > 768) {
+      textareaRef.current?.focus();
+    }
   }, [
     input,
     setInput,
@@ -157,6 +167,7 @@ function PureWebsiteMultimodalInput({
     setAttachments,
     setLocalStorageInput,
     width,
+    chatId,
     selectedTemplate,
     onClearTemplate,
     tw,
@@ -188,7 +199,9 @@ function PureWebsiteMultimodalInput({
         toast.error(
           "Images are not supported. Please upload PDF, CSV, TXT, JSON, Python, or other document files."
         );
-        if (fileInputRef.current) fileInputRef.current.value = "";
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
         return;
       }
       setUploadQueue(files.map((f) => f.name));
@@ -245,12 +258,16 @@ function PureWebsiteMultimodalInput({
           </div>
         )}
         <PromptInput
-          className="[&>div]:rounded-2xl [&>div]:border [&>div]:border-black/20 dark:[&>div]:border-white/15 [&>div]:bg-card/70 dark:[&>div]:bg-white/5 [&>div]:shadow-[var(--shadow-composer)] [&>div]:shadow-sm"
+          className="[&>div]:rounded-2xl [&>div]:border [&>div]:border-black/20 dark:[&>div]:border-white/15 [&>div]:bg-card/70 dark:[&>div]:bg-white/5 [&>div]:shadow-sm"
           onSubmit={() => {
-            if (!input.trim() && attachments.length === 0) return;
-            if (status === "ready" || status === "error") submitForm();
-            else
+            if (!input.trim() && attachments.length === 0) {
+              return;
+            }
+            if (status === "ready" || status === "error") {
+              submitForm();
+            } else {
               toast.error("Please wait for the model to finish its response!");
+            }
           }}
         >
           {(attachments.length > 0 || uploadQueue.length > 0) && (
@@ -264,7 +281,9 @@ function PureWebsiteMultimodalInput({
                   key={a.url}
                   onRemove={() => {
                     setAttachments((c) => c.filter((x) => x.url !== a.url));
-                    if (fileInputRef.current) fileInputRef.current.value = "";
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = "";
+                    }
                   }}
                 />
               ))}
@@ -284,7 +303,6 @@ function PureWebsiteMultimodalInput({
             )}
             data-testid="multimodal-input"
             onChange={handleInput}
-            onKeyDown={() => {}}
             placeholder={placeholder}
             ref={textareaRef}
             value={input}
@@ -320,7 +338,7 @@ function PureWebsiteMultimodalInput({
                 </PopoverTrigger>
                 <PopoverContent
                   align="end"
-                  className="w-40 rounded-xl border border-black/20 dark:border-white/20 bg-card p-1.5 shadow-[var(--shadow-float)]"
+                  className="w-40 rounded-xl border border-black/20 dark:border-white/20 bg-card p-1.5 shadow-sm"
                   side="top"
                   sideOffset={8}
                 >
@@ -346,7 +364,7 @@ function PureWebsiteMultimodalInput({
                 </PopoverContent>
               </Popover>
               {status === "submitted" ? (
-                <StopButton setMessages={setMessages} stop={stop} />
+                <StopButton setMessages={_setMessages} stop={stop} />
               ) : (
                 <PromptInputSubmit
                   className={cn(
@@ -374,10 +392,18 @@ function PureWebsiteMultimodalInput({
 export const WebsiteMultimodalInput = memo(
   PureWebsiteMultimodalInput,
   (prev, next) => {
-    if (prev.input !== next.input) return false;
-    if (prev.status !== next.status) return false;
-    if (prev.isLoading !== next.isLoading) return false;
-    if (prev.selectedTemplate !== next.selectedTemplate) return false;
+    if (prev.input !== next.input) {
+      return false;
+    }
+    if (prev.status !== next.status) {
+      return false;
+    }
+    if (prev.isLoading !== next.isLoading) {
+      return false;
+    }
+    if (prev.selectedTemplate !== next.selectedTemplate) {
+      return false;
+    }
     return true;
   }
 );

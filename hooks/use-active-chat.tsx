@@ -55,8 +55,13 @@ type ActiveChatContextValue = {
 const ActiveChatContext = createContext<ActiveChatContextValue | null>(null);
 
 function extractChatId(pathname: string): string | null {
-  const match = pathname.match(/\/chat\/([^/]+)/);
+  // Match /chat/[id] or /websites/chat/[id]
+  const match = pathname.match(/\/(?:websites\/)?chat\/([^/]+)/);
   return match ? match[1] : null;
+}
+
+function isWebsitesChat(pathname: string): boolean {
+  return pathname.startsWith("/websites/chat/");
 }
 
 export function ActiveChatProvider({ children }: { children: ReactNode }) {
@@ -68,6 +73,7 @@ export function ActiveChatProvider({ children }: { children: ReactNode }) {
   const isNewChat = !chatIdFromUrl;
   const newChatIdRef = useRef(generateUUID());
   const prevPathnameRef = useRef(pathname);
+  const isWebsites = isWebsitesChat(pathname);
 
   if (isNewChat && prevPathnameRef.current !== pathname) {
     newChatIdRef.current = generateUUID();
@@ -87,10 +93,12 @@ export function ActiveChatProvider({ children }: { children: ReactNode }) {
   const [input, setInput] = useState("");
   const [showCreditCardAlert, setShowCreditCardAlert] = useState(false);
 
+  const apiMessagesUrl = isWebsites
+    ? `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/websites/messages?chatId=${chatId}`
+    : `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/messages?chatId=${chatId}`;
+
   const { data: chatData, isLoading } = useSWR(
-    isNewChat
-      ? null
-      : `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/messages?chatId=${chatId}`,
+    isNewChat ? null : apiMessagesUrl,
     fetcher,
     { revalidateOnFocus: false }
   );
@@ -128,7 +136,9 @@ export function ActiveChatProvider({ children }: { children: ReactNode }) {
       );
     },
     transport: new DefaultChatTransport({
-      api: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/chat`,
+      api: isWebsites
+        ? `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/websites/chat`
+        : `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/chat`,
       fetch: fetchWithErrorHandlers,
       prepareSendMessagesRequest(request) {
         const lastMessage = request.messages.at(-1);
