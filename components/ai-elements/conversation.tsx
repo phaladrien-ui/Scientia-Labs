@@ -8,7 +8,11 @@ import { ArrowDownIcon, DownloadIcon } from "lucide-react";
 import { useCallback } from "react";
 import { StickToBottom, useStickToBottomContext } from "use-stick-to-bottom";
 
-export type ConversationProps = ComponentProps<typeof StickToBottom>;
+// ✅ Correction 1 : On exclut "children" du type pour éviter le conflit
+export type ConversationProps = Omit<
+  ComponentProps<typeof StickToBottom>,
+  "children"
+>;
 
 export const Conversation = ({ className, ...props }: ConversationProps) => (
   <StickToBottom
@@ -20,8 +24,10 @@ export const Conversation = ({ className, ...props }: ConversationProps) => (
   />
 );
 
-export type ConversationContentProps = ComponentProps<
-  typeof StickToBottom.Content
+// ✅ Correction 2 : Même logique pour Content
+export type ConversationContentProps = Omit<
+  ComponentProps<typeof StickToBottom.Content>,
+  "children"
 >;
 
 export const ConversationContent = ({
@@ -105,9 +111,10 @@ export interface ConversationMessage {
   content: string;
 }
 
+// ✅ Correction 3 : On exclut "onClick" ET "children" puisqu'on les gère manuellement
 export type ConversationDownloadProps = Omit<
   ComponentProps<typeof Button>,
-  "onClick"
+  "onClick" | "children"
 > & {
   messages: ConversationMessage[];
   filename?: string;
