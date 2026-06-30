@@ -73,8 +73,6 @@ function getStreamContext() {
   }
 }
 
-export { getStreamContext };
-
 async function getFileContent(
   fileId: string
 ): Promise<{ name: string; type: string; data: string } | null> {
