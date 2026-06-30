@@ -64,7 +64,7 @@ export const suggestionsPlugin = new Plugin({
   key: suggestionsPluginKey,
   state: {
     init() {
-      return { decorations: DecorationSet.empty, selected: null };
+      return { decorations: DecorationSet.empty, selected: null as number | null };
     },
     apply(tr, state) {
       const newDecorations = tr.getMeta(suggestionsPluginKey);
