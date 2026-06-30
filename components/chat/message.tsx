@@ -69,7 +69,7 @@ const PurePreviewMessage = ({
       (part.type === "reasoning" &&
         "text" in part &&
         part.text?.trim().length > 0) ||
-      part.type.startsWith("tool-")
+      (part.type as string).startsWith("tool-")
   );
   const isThinking = isAssistant && isLoading && !hasAnyContent;
 
@@ -268,8 +268,8 @@ const PurePreviewMessage = ({
       return <NewsSearchTool key={key} part={part} />;
     }
 
-    if (type === "tool-calculate") {
-      return <CalculateTool key={key} part={part} />;
+    if ((type as string) === "tool-calculate") {
+      return <CalculateTool key={key} part={part as any} />;
     }
 
     return null;

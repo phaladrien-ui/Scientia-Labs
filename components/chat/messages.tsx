@@ -33,7 +33,7 @@ type MessagesProps = {
 
 function PureMessages({
   addToolApprovalResponse,
-  activeCategory,
+  activeCategory: _activeCategory,
   chatId,
   status,
   votes,
@@ -46,8 +46,8 @@ function PureMessages({
   selectedModelId: _selectedModelId,
   onEditMessage,
   isWebsites,
-  sendMessage,
-  setActiveCategory,
+  sendMessage: _sendMessage,
+  setActiveCategory: _setActiveCategory,
 }: MessagesProps) {
   const {
     containerRef,
