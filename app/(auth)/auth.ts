@@ -189,10 +189,10 @@ export const {
                 .insert(userTable)
                 .values({
                   email,
-                  name: token.name ?? "",
-                  image: token.picture ?? "",
+                  name: (token.name ?? "") as string,
+                  image: (token.picture ?? "") as string,
                   emailVerified: true,
-                })
+                } as any)
                 .returning({ id: userTable.id });
               token.id = newUser.id;
               token.type = "regular";
