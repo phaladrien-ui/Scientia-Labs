@@ -54,7 +54,9 @@ function SiteProgressInline({ content }: { content: string }) {
   let data: { phase?: string; html?: string; css?: string; js?: string } = {};
   try {
     data = JSON.parse(content);
-  } catch {}
+  } catch {
+    // noop
+  }
 
   const phaseLabels: Record<string, string> = {
     html: "📝 Écriture du HTML",
@@ -230,7 +232,7 @@ const PureHitboxLayer = ({
   result,
   setArtifact,
 }: {
-  hitboxRef: React.RefObject<HTMLDivElement>;
+  hitboxRef: React.RefObject<HTMLDivElement | null>;
   result?: Partial<DocumentToolOutput>;
   setArtifact: (
     updaterFn: UIArtifact | ((currentArtifact: UIArtifact) => UIArtifact)
