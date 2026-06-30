@@ -9,7 +9,7 @@ import { artifactDefinitions } from "./artifact";
 import { useDataStream } from "./data-stream-provider";
 import { getChatHistoryPaginationKey } from "./sidebar-history";
 
-export function DataStreamHandler() {
+export function DataStreamHandler(): null {
   const { dataStream, setDataStream, setScientificTrace } = useDataStream();
   const { mutate } = useSWRConfig();
   const { artifact, setArtifact, setMetadata } = useArtifact();
