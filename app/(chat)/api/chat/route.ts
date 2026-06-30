@@ -105,7 +105,7 @@ export async function POST(request: Request) {
     } = requestBody;
 
     const [, session] = await Promise.all([
-      checkBotId().catch(() => null),
+      checkBotId().catch((): null => null),
       auth(),
     ]);
 
@@ -399,7 +399,7 @@ export async function POST(request: Request) {
                     role: finishedMsg.role,
                     parts: finishedMsg.parts,
                     createdAt: new Date(),
-                    attachments: [],
+                    attachments: [] as any[],
                     chatId: id,
                   },
                 ],
@@ -413,7 +413,7 @@ export async function POST(request: Request) {
               role: currentMessage.role,
               parts: currentMessage.parts,
               createdAt: new Date(),
-              attachments: [],
+              attachments: [] as any[],
               chatId: id,
             })),
           });
