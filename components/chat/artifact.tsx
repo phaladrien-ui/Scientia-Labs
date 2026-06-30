@@ -109,7 +109,7 @@ function PureArtifact({
   const [document, setDocument] = useState<Document | null>(null);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
 
-  const { state: sidebarState } = useSidebar();
+  useSidebar();
   const artifactContentRef = useRef<HTMLDivElement>(null);
   const userScrolledArtifact = useRef(false);
   const [isContentDirty, setIsContentDirty] = useState(false);
@@ -280,6 +280,9 @@ function PureArtifact({
     throw new Error("Artifact definition not found!");
   }
 
+  const ContentComponent =
+    artifactDefinition.content as React.ComponentType<any>;
+
   useEffect(() => {
     if (
       artifact.documentId !== "init" &&
@@ -366,7 +369,7 @@ function PureArtifact({
         }}
         ref={artifactContentRef}
       >
-        <artifactDefinition.content
+        <ContentComponent
           content={
             isCurrentVersion
               ? artifact.content
