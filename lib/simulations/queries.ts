@@ -46,10 +46,10 @@ export async function setUserCategory(
   try {
     await db
       .insert(userCategory)
-      .values({ userId, category, updatedAt: new Date() })
+      .values({ userId, category, updatedAt: new Date() } as any)
       .onConflictDoUpdate({
         target: userCategory.userId,
-        set: { category, updatedAt: new Date() },
+        set: { category, updatedAt: new Date() } as any,
       });
   } catch (_error) {
     console.error("setUserCategory DB Error:", _error);
@@ -122,7 +122,7 @@ export async function createSimulation(data: {
         category: data.category,
         parameters: data.parameters ?? {},
         code: data.code ?? null,
-      })
+      } as any)
       .returning();
     return result;
   } catch (_error) {
@@ -150,7 +150,7 @@ export async function updateSimulation(
     if (data.code !== undefined) updates.code = data.code;
     if (data.isFavorite !== undefined) updates.isFavorite = data.isFavorite;
 
-    await db.update(simulation).set(updates).where(eq(simulation.id, id));
+    await db.update(simulation).set(updates as any).where(eq(simulation.id, id));
   } catch (_error) {
     console.error("updateSimulation DB Error:", _error);
     throw new ChatbotError(
@@ -186,7 +186,7 @@ export async function toggleFavorite(id: string): Promise<boolean> {
     const newValue = !sim.isFavorite;
     await db
       .update(simulation)
-      .set({ isFavorite: newValue, updatedAt: new Date() })
+      .set({ isFavorite: newValue, updatedAt: new Date() } as any)
       .where(eq(simulation.id, id));
 
     return newValue;
