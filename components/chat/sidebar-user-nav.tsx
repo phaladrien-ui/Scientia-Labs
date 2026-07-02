@@ -37,17 +37,14 @@ function emailToHue(email: string): number {
   return Math.abs(hash) % 360;
 }
 
-function getDisplayName(user: NextAuthUser): string {
-  if (user.name) {
-    return user.name;
-  }
-  if (user.email) {
-    return user.email.split("@")[0];
-  }
+function getDisplayName(user?: NextAuthUser): string {
+  if (!user) return "Guest";
+  if (user.name) return user.name;
+  if (user.email) return user.email.split("@")[0];
   return "User";
 }
 
-export function SidebarUserNav({ user }: { user: NextAuthUser }) {
+export function SidebarUserNav({ user }: { user?: NextAuthUser }) {
   const router = useRouter();
   const { data, status } = useSession();
   const { setTheme, resolvedTheme } = useTheme();
@@ -83,7 +80,7 @@ export function SidebarUserNav({ user }: { user: NextAuthUser }) {
               <div
                 className="size-5 shrink-0 rounded-full ring-1 ring-sidebar-border/50"
                 style={{
-                  background: `linear-gradient(135deg, oklch(0.35 0.08 ${emailToHue(user.email ?? "")}), oklch(0.25 0.05 ${emailToHue(user.email ?? "") + 40}))`,
+                  background: `linear-gradient(135deg, oklch(0.35 0.08 ${emailToHue(user?.email ?? "")}), oklch(0.25 0.05 ${emailToHue(user?.email ?? "") + 40}))`,
                 }}
               />
               <span className="truncate text-[13px] font-medium flex-1">
@@ -103,7 +100,7 @@ export function SidebarUserNav({ user }: { user: NextAuthUser }) {
               <div
                 className="size-9 shrink-0 rounded-full ring-1 ring-sidebar-border/50"
                 style={{
-                  background: `linear-gradient(135deg, oklch(0.4 0.1 ${emailToHue(user.email ?? "")}), oklch(0.3 0.06 ${emailToHue(user.email ?? "") + 40}))`,
+                  background: `linear-gradient(135deg, oklch(0.4 0.1 ${emailToHue(user?.email ?? "")}), oklch(0.3 0.06 ${emailToHue(user?.email ?? "") + 40}))`,
                 }}
               />
               <div className="min-w-0">
@@ -111,7 +108,7 @@ export function SidebarUserNav({ user }: { user: NextAuthUser }) {
                   {displayName}
                 </p>
                 <p className="text-[12px] text-sidebar-foreground/50 truncate">
-                  {user.email ?? "—"}
+                  {user?.email ?? "—"}
                 </p>
               </div>
             </div>
