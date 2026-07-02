@@ -1,4 +1,4 @@
-// components/chat/app-sidebar.tsx
+﻿// components/chat/app-sidebar.tsx
 "use client";
 
 import {
@@ -167,7 +167,7 @@ export function AppSidebar() {
         <SidebarHistory user={user} />
       </SidebarContent>
       <SidebarFooter className="border-t border-black/10 dark:border-white/10 pt-2 pb-3 relative z-10">
-        {user && <SidebarUserNav user={user} />}
+        <SidebarUserNav user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
