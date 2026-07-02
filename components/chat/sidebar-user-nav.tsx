@@ -27,7 +27,6 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { guestRegex } from "@/lib/constants";
-import { LoaderIcon } from "./icons";
 import { toast } from "./toast";
 
 function emailToHue(email: string): number {
@@ -61,15 +60,13 @@ export function SidebarUserNav({ user }: { user: NextAuthUser }) {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton className="h-10 justify-between rounded-lg bg-transparent text-sidebar-foreground/50 transition-colors duration-150 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+          <SidebarMenuButton
+            className="h-10 justify-between rounded-lg bg-transparent text-sidebar-foreground/50 transition-colors duration-150 hover:text-sidebar-foreground cursor-pointer"
+            onClick={() => router.push("/login")}
+          >
             <div className="flex flex-row items-center gap-2">
-              <div className="size-6 animate-pulse rounded-full bg-sidebar-foreground/10" />
-              <span className="animate-pulse rounded-md bg-sidebar-foreground/10 text-transparent text-[13px]">
-                Loading...
-              </span>
-            </div>
-            <div className="animate-spin text-sidebar-foreground/50">
-              <LoaderIcon />
+              <User className="size-4" />
+              <span className="text-[13px]">Sign in</span>
             </div>
           </SidebarMenuButton>
         </SidebarMenuItem>
