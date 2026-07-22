@@ -6,7 +6,8 @@
     "toggleSidebar": "Basculer la sidebar",
     "openSidebar": "Ouvrir la sidebar",
     "search": "Rechercher",
-    "deepResearch": "Deep Research"
+    "deepResearch": "Deep Research",
+    "artefacts": "Artefacts"
   },
   "settings": {
     "title": "Paramètres",
@@ -299,5 +300,19 @@
     "copied": "Copié",
     "openLink": "Ouvrir le lien",
     "dontAskAgain": "Ne plus afficher ce message"
-  }
+  },
+
+  "artefacts": {
+    "title": "Artefacts",
+    "newArtefact": "Nouvel artefact",
+    "searchPlaceholder": "Rechercher un artefact...",
+    "types": {
+      "text": "Texte",
+      "code": "Code",
+      "image": "Image",
+      "sheet": "Tableur",
+      "site": "Site",
+      "search": "Recherche"
+    }
+}
 }

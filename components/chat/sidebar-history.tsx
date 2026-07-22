@@ -46,6 +46,25 @@ export type ChatHistory = {
 
 const PAGE_SIZE = 20;
 
+// Déduplique les chats par id, en gardant la première occurrence rencontrée.
+// Nécessaire car les pages SWRInfinite peuvent se chevaucher (ex: un chat créé
+// entre deux fetchs peut décaler la pagination et faire apparaître le même
+// chat sur deux pages), ce qui provoque des clés React dupliquées et un
+// rendu visuel corrompu ("Encountered two children with the same key").
+const dedupeChatsById = (chats: Chat[]): Chat[] => {
+  const seen = new Set<string>();
+  const result: Chat[] = [];
+
+  for (const chat of chats) {
+    if (!seen.has(chat.id)) {
+      seen.add(chat.id);
+      result.push(chat);
+    }
+  }
+
+  return result;
+};
+
 const groupChatsByDate = (chats: Chat[]): GroupedChats => {
   const now = new Date();
   const oneWeekAgo = subWeeks(now, 1);
@@ -229,8 +248,10 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
           <SidebarMenu>
             {paginatedChatHistories &&
               (() => {
-                const chatsFromHistory = paginatedChatHistories.flatMap(
-                  (paginatedChatHistory) => paginatedChatHistory.chats
+                const chatsFromHistory = dedupeChatsById(
+                  paginatedChatHistories.flatMap(
+                    (paginatedChatHistory) => paginatedChatHistory.chats
+                  )
                 );
 
                 const groupedChats = groupChatsByDate(chatsFromHistory);

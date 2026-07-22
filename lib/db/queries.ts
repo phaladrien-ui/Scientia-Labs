@@ -342,12 +342,14 @@ export async function saveDocument({
   kind,
   content,
   userId,
+  chatId,
 }: {
   id: string;
   title: string;
   kind: ArtifactKind;
   content: string;
   userId: string;
+  chatId?: string;
 }) {
   try {
     return await db
@@ -358,6 +360,7 @@ export async function saveDocument({
         kind: kind as "image" | "text" | "code" | "sheet",
         content,
         userId,
+        chatId: chatId ?? null,
         createdAt: new Date(),
       } as any)
       .returning();
@@ -833,5 +836,48 @@ export async function updateUserProfile({
       "bad_request:database",
       "Failed to update user profile"
     );
+  }
+}
+
+export async function getDocumentsByUserId({ userId }: { userId: string }) {
+  try {
+    return await db
+      .select()
+      .from(document)
+      .where(eq(document.userId, userId))
+      .orderBy(desc(document.createdAt));
+  } catch (_error) {
+    console.error("getDocumentsByUserId DB Error:", _error);
+    throw new ChatbotError(
+      "bad_request:database",
+      "Failed to get documents by user id"
+    );
+  }
+}
+
+export async function getChatIdByDocumentId({ documentId, userId }: { documentId: string; userId: string }) {
+  try {
+    const messages = await db
+      .select({ id: message.id, chatId: message.chatId, parts: message.parts })
+      .from(message)
+      .innerJoin(chat, eq(message.chatId, chat.id))
+      .where(eq(chat.userId, userId));
+
+    for (const msg of messages) {
+      const parts = msg.parts as any[];
+      if (!parts) continue;
+      const hasDocument = parts.some((p: any) => {
+        const output = p?.output;
+        return output?.id === documentId || p?.documentId === documentId;
+      });
+      if (hasDocument) {
+        return { chatId: msg.chatId };
+      }
+    }
+
+    return { chatId: null };
+  } catch (_error) {
+    console.error("getChatIdByDocumentId DB Error:", _error);
+    return { chatId: null };
   }
 }

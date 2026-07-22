@@ -472,6 +472,9 @@ function PureArtifact({
 }
 
 export const Artifact = memo(PureArtifact, (prevProps, nextProps) => {
+  if (prevProps.chatId !== nextProps.chatId) {
+    return false;
+  }
   if (prevProps.status !== nextProps.status) {
     return false;
   }

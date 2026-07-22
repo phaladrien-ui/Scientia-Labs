@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,23 +51,31 @@ export function ChatShellChat() {
     setShowCreditCardAlert,
   } = useActiveChat();
 
-  const [editingMessage, setEditingMessage] = useState<ChatMessage | null>(
-    null
-  );
+  const [editingMessage, setEditingMessage] = useState<ChatMessage | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [carouselDismissed, setCarouselDismissed] = useState(false);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
   const { artifact, setArtifact } = useArtifact();
+  const router = useRouter();
 
   const stopRef = useRef(stop);
   stopRef.current = stop;
+
+  const searchParams = useSearchParams();
+  const documentParam = searchParams.get("document");
+  const hasLoadedDocument = useRef(false);
+  const [showArtifact, setShowArtifact] = useState(false);
+  const [artifactDocId, setArtifactDocId] = useState("");
 
   const prevChatIdRef = useRef(chatId);
   useEffect(() => {
     if (prevChatIdRef.current !== chatId) {
       prevChatIdRef.current = chatId;
       stopRef.current();
+      hasLoadedDocument.current = false;
+      setShowArtifact(false);
+      setArtifactDocId("");
       setArtifact(initialArtifactData);
       setEditingMessage(null);
       setAttachments([]);
@@ -77,6 +86,31 @@ export function ChatShellChat() {
 
   const isNewEmptyChat =
     !chatId || (chatId && messages.length === 0 && !isLoading);
+
+  useEffect(() => {
+    if (documentParam && !hasLoadedDocument.current) {
+      hasLoadedDocument.current = true;
+      fetch(`/api/document?id=${documentParam}`)
+        .then((res) => res.json())
+        .then((data) => {
+          const doc = Array.isArray(data) ? data[0] : data;
+          if (doc) {
+            setArtifact({
+              documentId: doc.id,
+              content: doc.content ?? "",
+              kind: doc.kind ?? "text",
+              title: doc.title ?? "",
+              status: "idle",
+              isVisible: true,
+              boundingBox: initialArtifactData.boundingBox,
+            });
+            setArtifactDocId(doc.id);
+            setShowArtifact(true);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [documentParam, setArtifact]);
 
   if (isLoading && messages.length === 0) {
     return (
@@ -199,8 +233,9 @@ export function ChatShellChat() {
         </div>
         {artifact.kind === "search" ? (
           <SearchArtifactPanel />
-        ) : (
+        ) : showArtifact ? (
           <Artifact
+            key={artifactDocId}
             addToolApprovalResponse={addToolApprovalResponse}
             attachments={attachments}
             chatId={chatId}
@@ -218,7 +253,7 @@ export function ChatShellChat() {
             stop={stop}
             votes={votes}
           />
-        )}
+        ) : null}
       </div>
       <DataStreamHandler />
       {!carouselDismissed && messages.length === 0 && !isLoading && (

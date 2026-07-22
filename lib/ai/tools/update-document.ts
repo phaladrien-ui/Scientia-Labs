@@ -1,3 +1,4 @@
+// lib/ai/tools/update-document.ts
 import { tool, type UIMessageStreamWriter } from "ai";
 import type { Session } from "next-auth";
 import { z } from "zod";
@@ -9,12 +10,14 @@ type UpdateDocumentProps = {
   session: Session;
   dataStream: UIMessageStreamWriter<ChatMessage>;
   modelId: string;
+  chatId?: string;
 };
 
 export const updateDocument = ({
   session,
   dataStream,
   modelId,
+  chatId,
 }: UpdateDocumentProps) =>
   tool({
     description:
@@ -60,6 +63,7 @@ export const updateDocument = ({
         dataStream,
         session,
         modelId,
+        chatId,
       });
 
       dataStream.write({ type: "data-finish", data: null, transient: true });

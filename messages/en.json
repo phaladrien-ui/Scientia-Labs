@@ -6,7 +6,8 @@
     "simulations": "Simulations",
     "toggleSidebar": "Toggle sidebar",
     "openSidebar": "Open sidebar",
-    "search": "Search"
+    "search": "Search",
+    "artefacts": "Artefacts"
   },
   "settings": {
     "title": "Settings",
@@ -299,5 +300,20 @@
     "copied": "Copied",
     "openLink": "Open link",
     "dontAskAgain": "Don't show this message again"
-  }
+  },
+
+
+  "artefacts": {
+    "title": "Artefacts",
+    "newArtefact": "New artefact",
+    "searchPlaceholder": "Search an artefact...",
+    "types": {
+      "text": "Text",
+      "code": "Code",
+      "image": "Image",
+      "sheet": "Sheet",
+      "site": "Site",
+      "search": "Search"
+    }
+}
 }

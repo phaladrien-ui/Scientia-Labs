@@ -8,9 +8,10 @@ import type { ChatMessage } from "@/lib/types";
 type EditDocumentProps = {
   session: Session;
   dataStream: UIMessageStreamWriter<ChatMessage>;
+  chatId?: string;
 };
 
-export const editDocument = ({ session, dataStream }: EditDocumentProps) =>
+export const editDocument = ({ session, dataStream, chatId }: EditDocumentProps) =>
   tool({
     description:
       "Make a targeted edit to an existing artifact by finding and replacing an exact string. Preferred over updateDocument for small changes. The old_string must match exactly.",
@@ -58,6 +59,7 @@ export const editDocument = ({ session, dataStream }: EditDocumentProps) =>
         kind: document.kind,
         content: updated,
         userId: document.userId,
+        chatId: chatId ?? document.chatId,
       });
 
       dataStream.write({
@@ -96,7 +98,6 @@ export const editDocument = ({ session, dataStream }: EditDocumentProps) =>
 
       return {
         id,
-        title: document.title,
         kind: document.kind,
         content:
           document.kind === "code"
