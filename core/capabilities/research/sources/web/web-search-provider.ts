@@ -1,11 +1,11 @@
-import type { Capability } from "../capability";
+import type { Capability } from "../../../capability";
 import { searchDuckDuckGo } from "./providers/duckduckgo";
 import { searchTavily } from "./providers/tavily";
 import type {
   SearchResult,
   WebSearchInput,
   WebSearchOutput,
-} from "./types";
+} from "./web-types";
 
 function deduplicateResults(
   results: SearchResult[]
@@ -32,8 +32,7 @@ export const webSearchCapability: Capability<
 
   name: "Web Search",
 
-  description:
-    "Search the public web for current information.",
+  description: "Search the public web for current information.",
 
   async execute(input) {
     const { query } = input;
@@ -42,19 +41,35 @@ export const webSearchCapability: Capability<
       throw new Error("Search query cannot be empty");
     }
 
-    const [tavilyData, duckduckgoResults] =
-      await Promise.all([
-        searchTavily(query),
-        searchDuckDuckGo(query),
-      ]);
+    // Exécuter chaque provider indépendamment
+    const [tavilyResult, duckduckgoResult] = await Promise.allSettled([
+      searchTavily(query),
+      searchDuckDuckGo(query),
+    ]);
+
+    // Récupérer les résultats réussis
+    const tavilyData = tavilyResult.status === "fulfilled" 
+      ? tavilyResult.value 
+      : { results: [], images: [] };
+    
+    const duckduckgoResults = duckduckgoResult.status === "fulfilled" 
+      ? duckduckgoResult.value 
+      : [];
+
+    // Logger les échecs
+    if (tavilyResult.status === "rejected") {
+      console.warn("Tavily search failed, using DuckDuckGo only:", tavilyResult.reason);
+    }
+    if (duckduckgoResult.status === "rejected") {
+      console.warn("DuckDuckGo search failed, using Tavily only:", duckduckgoResult.reason);
+    }
 
     const allResults = [
       ...tavilyData.results,
       ...duckduckgoResults,
     ];
 
-    const uniqueResults =
-      deduplicateResults(allResults).slice(0, 8);
+    const uniqueResults = deduplicateResults(allResults).slice(0, 8);
 
     const images = [
       ...tavilyData.images,

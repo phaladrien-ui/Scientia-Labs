@@ -1,11 +1,16 @@
+// agents/researcher/research-types.ts
+
 export type SourceType =
   | "primary"
   | "secondary"
   | "tertiary"
   | "unknown";
 
-export interface ResearchRequest {
-  readonly question: string;
+export interface ResearchSource {
+  readonly title: string;
+  readonly url: string;
+  readonly snippet: string;
+  evaluation?: SourceEvaluation;
 }
 
 export interface SourceEvaluation {
@@ -18,11 +23,13 @@ export interface SourceEvaluation {
   readonly reasoning: string;
 }
 
-export interface ResearchSource {
-  readonly title: string;
-  readonly url: string;
-  readonly snippet: string;
-  evaluation?: SourceEvaluation;
+export interface ResearchRequest {
+  readonly question: string;
+  readonly sources?: {
+    include?: string[];    // Sources obligatoires
+    exclude?: string[];    // Sources interdites
+    preferred?: string[];  // Sources prioritaires
+  };
 }
 
 export interface ResearchResult {

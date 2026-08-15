@@ -7,7 +7,7 @@ import type {
   ResearchSource
 } from "./research-types";
 
-import type { WebSearchOutput } from "../../capabilities/web-search/types";
+import type { ResearchResult as CapabilityResearchResult } from "../../capabilities/research/research-result";
 
 import { SourceEvaluator } from "./source-evaluator";
 
@@ -16,9 +16,28 @@ import {
   type ResearchGap
 } from "./research-gap-analyzer";
 
-const MAX_RESEARCH_ITERATIONS = 3;
-const MAX_SOURCES = 15;
+/*
+ * ============================================================
+ * CONFIGURATION
+ * ============================================================
+ */
+
+const MAX_INITIAL_ITERATIONS = 3;
+const MAX_INITIAL_SOURCES = 10;
+
 const MAX_GAP_SEARCHES = 5;
+const MAX_QUERIES_PER_GAP = 2;
+
+const MAX_TOTAL_SOURCES = 30;
+const MAX_FINAL_SOURCES = 20;
+
+const MIN_FINAL_SCORE = 45;
+
+/*
+ * ============================================================
+ * RESEARCHER AGENT
+ * ============================================================
+ */
 
 export class ResearcherAgent implements Agent {
   readonly id = "researcher";
@@ -26,15 +45,23 @@ export class ResearcherAgent implements Agent {
 
   private context: AgentContext | null = null;
 
-  async initialize(
-    context: AgentContext
-  ): Promise<void> {
+  /*
+   * ============================================================
+   * INITIALIZATION
+   * ============================================================
+   */
+
+  async initialize(context: AgentContext): Promise<void> {
     this.context = context;
   }
 
-  async execute(
-    input: unknown
-  ): Promise<ResearchResult> {
+  /*
+   * ============================================================
+   * EXECUTION
+   * ============================================================
+   */
+
+  async execute(input: unknown): Promise<ResearchResult> {
     if (!this.context) {
       throw new Error(
         "Researcher has not been initialized"
@@ -43,27 +70,23 @@ export class ResearcherAgent implements Agent {
 
     const request = input as ResearchRequest;
 
-    if (!request.question?.trim()) {
+    if (!request?.question?.trim()) {
       throw new Error(
         "Research question cannot be empty"
       );
     }
 
-    const webSearch =
-      this.context.capabilities.get(
-        "web.search"
-      );
+    const researchCapability =
+      this.context.capabilities.get("research");
 
-    if (!webSearch) {
+    if (!researchCapability) {
       throw new Error(
-        "Web search capability is not available"
+        "Research capability is not available"
       );
     }
 
     const llm =
-      this.context.llmProviders.get(
-        "deepseek"
-      );
+      this.context.llmProviders.get("deepseek");
 
     if (!llm) {
       throw new Error(
@@ -77,86 +100,49 @@ export class ResearcherAgent implements Agent {
     const gapAnalyzer =
       new ResearchGapAnalyzer(llm);
 
+    /*
+     * Une Map permet de dédupliquer les sources
+     * automatiquement par URL normalisée.
+     */
     const sources =
       new Map<string, ResearchSource>();
 
-    let currentQuery =
-      request.question;
+    /*
+     * ============================================================
+     * PHASE 1 — INITIAL RESEARCH
+     * ============================================================
+     */
 
-    // ============================================================
-    // PHASE 1 — INITIAL RESEARCH
-    // ============================================================
+    const initialQueries =
+      this.buildInitialQueries(
+        request.question
+      );
 
     for (
       let iteration = 0;
-      iteration < MAX_RESEARCH_ITERATIONS;
+      iteration < initialQueries.length &&
+      iteration < MAX_INITIAL_ITERATIONS;
       iteration++
     ) {
+      const query =
+        initialQueries[iteration];
+
       console.log(
-        `[Researcher] Research iteration ${
+        `[Researcher] Initial search ${
           iteration + 1
-        }/${MAX_RESEARCH_ITERATIONS}`
+        }/${MAX_INITIAL_ITERATIONS}`
       );
 
       console.log(
-        `[Researcher] Searching: ${currentQuery}`
+        `[Researcher] Query: ${query}`
       );
 
-      try {
-        const searchResult =
-          (await webSearch.execute({
-            query: currentQuery
-          })) as WebSearchOutput;
-
-        if (
-          !searchResult ||
-          !Array.isArray(searchResult.results)
-        ) {
-          console.warn(
-            "[Researcher] Web search returned no valid results."
-          );
-
-          continue;
-        }
-
-        for (const result of searchResult.results) {
-          if (
-            !result ||
-            typeof result.url !== "string" ||
-            !result.url.trim()
-          ) {
-            continue;
-          }
-
-          const normalizedUrl =
-            result.url
-              .toLowerCase()
-              .replace(/\/$/, "");
-
-          if (!sources.has(normalizedUrl)) {
-            sources.set(
-              normalizedUrl,
-              {
-                title: result.title ?? "Untitled source",
-                url: result.url,
-                snippet: result.snippet ?? ""
-              }
-            );
-          }
-
-          if (
-            sources.size >=
-            MAX_SOURCES
-          ) {
-            break;
-          }
-        }
-      } catch (error) {
-        console.error(
-          `[Researcher] Search failed: ${currentQuery}`,
-          error
-        );
-      }
+      await this.executeSearch(
+        query,
+        researchCapability,
+        sources,
+        MAX_INITIAL_SOURCES
+      );
 
       console.log(
         `[Researcher] Sources collected: ${sources.size}`
@@ -164,101 +150,69 @@ export class ResearcherAgent implements Agent {
 
       if (
         sources.size >=
-        MAX_SOURCES
+        MAX_INITIAL_SOURCES
       ) {
         console.log(
-          "[Researcher] Source limit reached."
+          "[Researcher] Initial source limit reached."
         );
 
         break;
       }
-
-      currentQuery =
-        `${request.question} latest research findings evidence`;
     }
 
     if (sources.size === 0) {
       throw new Error(
-        "No web search results found"
+        "No research results found"
       );
     }
 
-    // ============================================================
-    // PHASE 2 — SOURCE EVALUATION
-    // ============================================================
+    /*
+     * ============================================================
+     * PHASE 2 — SOURCE EVALUATION
+     * ============================================================
+     */
 
-    const sourceList =
+    let sourceList =
       Array.from(sources.values());
 
     console.log(
-      `[Researcher] Evaluating ${sourceList.length} sources...`
+      `[Researcher] Evaluating ${sourceList.length} initial sources...`
     );
 
-    for (const source of sourceList) {
-      console.log(
-        `[Researcher] Evaluating: ${source.title}`
-      );
-
-      try {
-        source.evaluation =
-          await sourceEvaluator.evaluate(
-            source,
-            request.question
-          );
-      } catch (error) {
-        console.error(
-          `[Researcher] Failed to evaluate source: ${source.title}`,
-          error
-        );
-      }
-    }
-
-    // ============================================================
-    // PHASE 3 — INITIAL SOURCE RANKING
-    // ============================================================
-
-    sourceList.sort(
-      (a, b) =>
-        (b.evaluation?.score ?? 0) -
-        (a.evaluation?.score ?? 0)
+    await this.evaluateSources(
+      sourceList,
+      sourceEvaluator,
+      request.question
     );
 
-    console.log(
-      "[Researcher] Source ranking:"
+    /*
+     * ============================================================
+     * PHASE 3 — INITIAL RANKING
+     * ============================================================
+     */
+
+    this.rankSources(sourceList);
+
+    this.logRanking(
+      sourceList,
+      "Initial source ranking"
     );
 
-    for (const source of sourceList) {
-      console.log(
-        `${source.evaluation?.score ?? 0}/100 - ${source.title}`
-      );
-    }
-
-    // ============================================================
-    // PHASE 4 — IDENTIFY RESEARCH GAPS
-    // ============================================================
+    /*
+     * ============================================================
+     * PHASE 4 — GAP ANALYSIS
+     * ============================================================
+     */
 
     console.log(
       "[Researcher] Analyzing research gaps..."
     );
 
-    let gapAnalysis;
-
-    try {
-      gapAnalysis =
-        await gapAnalyzer.analyze(
-          request.question,
-          sourceList
-        );
-    } catch (error) {
-      console.error(
-        "[Researcher] Research gap analysis failed:",
-        error
+    const gapAnalysis =
+      await gapAnalyzer.analyze(
+        request.question,
+        sourceList
       );
-
-      gapAnalysis = {
-        gaps: []
-      };
-    }
 
     console.log(
       `[Researcher] Research gaps detected: ${gapAnalysis.gaps.length}`
@@ -280,156 +234,207 @@ export class ResearcherAgent implements Agent {
       }
     }
 
-    // ============================================================
-    // PHASE 5 — TARGETED FOLLOW-UP RESEARCH
-    // ============================================================
+    /*
+     * ============================================================
+     * PHASE 5 — TARGETED GAP RESEARCH
+     * ============================================================
+     */
 
-    const highPriorityGaps =
-      gapAnalysis.gaps
-        .filter(
-          (gap) =>
-            gap.priority === "high" ||
-            gap.priority === "medium"
-        )
-        .slice(
-          0,
-          MAX_GAP_SEARCHES
-        );
+    /*
+     * IMPORTANT:
+     * gapAnalysis.gaps peut être readonly.
+     * prioritizeGaps accepte donc readonly ResearchGap[].
+     */
+    const prioritizedGaps =
+      this.prioritizeGaps(
+        gapAnalysis.gaps
+      );
 
-    for (const gap of highPriorityGaps) {
+    console.log(
+      `[Researcher] Executing targeted research for ${prioritizedGaps.length} gaps...`
+    );
+
+    for (const gap of prioritizedGaps) {
       await this.executeGapResearch(
         gap,
-        webSearch,
+        researchCapability,
         sources
       );
+
+      /*
+       * On garde une limite globale pour éviter
+       * une explosion du nombre de résultats.
+       */
+      if (
+        sources.size >=
+        MAX_TOTAL_SOURCES
+      ) {
+        console.log(
+          "[Researcher] Maximum total source limit reached."
+        );
+
+        break;
+      }
     }
 
-    // ============================================================
-    // PHASE 6 — EVALUATE NEW SOURCES
-    // ============================================================
+    /*
+     * ============================================================
+     * PHASE 6 — EVALUATE NEW SOURCES
+     * ============================================================
+     */
 
-    const updatedSourceList =
+    sourceList =
       Array.from(sources.values());
 
-    console.log(
-      `[Researcher] Evaluating new sources. Total: ${updatedSourceList.length}`
-    );
-
-    for (const source of updatedSourceList) {
-      if (source.evaluation) {
-        continue;
-      }
-
-      console.log(
-        `[Researcher] Evaluating new source: ${source.title}`
+    const unevaluatedSources =
+      sourceList.filter(
+        (source) =>
+          !source.evaluation
       );
 
-      try {
-        source.evaluation =
-          await sourceEvaluator.evaluate(
-            source,
-            request.question
-          );
-      } catch (error) {
-        console.error(
-          `[Researcher] Failed to evaluate new source: ${source.title}`,
-          error
-        );
-      }
-    }
-
-    // ============================================================
-    // PHASE 7 — FINAL RANKING
-    // ============================================================
-
-    updatedSourceList.sort(
-      (a, b) =>
-        (b.evaluation?.score ?? 0) -
-        (a.evaluation?.score ?? 0)
+    console.log(
+      `[Researcher] New sources requiring evaluation: ${unevaluatedSources.length}`
     );
+
+    await this.evaluateSources(
+      unevaluatedSources,
+      sourceEvaluator,
+      request.question
+    );
+
+    /*
+     * ============================================================
+     * PHASE 7 — FINAL EVIDENCE RANKING
+     * ============================================================
+     */
+
+    sourceList =
+      Array.from(sources.values());
+
+    this.rankSources(sourceList);
+
+    /*
+     * On préfère les sources correctement évaluées.
+     * Les sources extrêmement faibles sont retirées
+     * du contexte final si suffisamment de meilleures
+     * sources existent.
+     */
+
+    const strongSources =
+      sourceList.filter(
+        (source) =>
+          (source.evaluation?.score ?? 0) >=
+          MIN_FINAL_SCORE
+      );
+
+    const candidateSources =
+      strongSources.length > 0
+        ? strongSources
+        : sourceList;
+
+    const finalSources =
+      candidateSources.slice(
+        0,
+        MAX_FINAL_SOURCES
+      );
+
+    this.logRanking(
+      finalSources,
+      "Final source ranking"
+    );
+
+    /*
+     * ============================================================
+     * PHASE 8 — SYNTHESIS
+     * ============================================================
+     */
 
     console.log(
-      "[Researcher] Final source ranking:"
+      `[Researcher] Synthesizing ${finalSources.length} sources...`
     );
-
-    for (const source of updatedSourceList) {
-      console.log(
-        `${source.evaluation?.score ?? 0}/100 - ${source.title}`
-      );
-    }
-
-    // ============================================================
-    // PHASE 8 — SYNTHESIS
-    // ============================================================
 
     const researchContext =
-      updatedSourceList
-        .map(
-          (source, index) =>
-            `Source ${index + 1}
-Title: ${source.title}
-URL: ${source.url}
-Content: ${source.snippet}
-
-Evaluation:
-Score: ${source.evaluation?.score ?? "unknown"}/100
-Type: ${source.evaluation?.sourceType ?? "unknown"}
-Credibility: ${source.evaluation?.credibility ?? "unknown"}/100
-Relevance: ${source.evaluation?.relevance ?? "unknown"}/100
-Evidence quality: ${source.evaluation?.evidenceQuality ?? "unknown"}/100
-Recency: ${source.evaluation?.recency ?? "unknown"}/100
-Reasoning: ${source.evaluation?.reasoning ?? "unknown"}`
-        )
-        .join("\n\n");
+      this.buildResearchContext(
+        finalSources
+      );
 
     const response =
       await llm.generate({
         messages: [
           {
             role: "system",
-            content:
-              "You are the scientific research agent of Scientia Labs. " +
-              "Produce a rigorous evidence-aware scientific synthesis. " +
-              "Prioritize high-quality sources, especially primary research. " +
-              "Do not treat weak sources as established evidence. " +
-              "Clearly distinguish established findings, preliminary claims, " +
-              "and speculation. Cite sources using Source 1, Source 2, etc. " +
-              "Never invent evidence. " +
-              "If a claim is insufficiently supported, explicitly say so."
+            content: [
+              "You are the scientific research agent of Scientia Labs.",
+              "",
+              "Your task is to produce a rigorous, evidence-aware scientific synthesis.",
+              "",
+              "CORE RULES:",
+              "1. Prioritize primary research and peer-reviewed evidence.",
+              "2. Distinguish primary, secondary, tertiary, and weak sources.",
+              "3. Never treat a weak source as strong evidence.",
+              "4. Never invent citations, studies, authors, dates,numbers, or findings.",
+              "5. Every important factual claim must be traceable to the provided sources.",
+              "6. Cite evidence using Source 1, Source 2, etc.",
+              "7. If sources disagree, explicitly describe the disagreement.",
+              "8. If evidence is insufficient, explicitly say so.",
+              "9. Distinguish established findings from preliminary findings.",
+              "10. Distinguish scientific evidence from speculation or media claims.",
+              "",
+              "EVIDENCE LANGUAGE:",
+              "- Use 'established' only when evidence is strong and well-supported.",
+              "- Use 'evidence suggests' when evidence is promising but incomplete.",
+              "- Use 'preliminary' when research is early-stage.",
+              "- Use 'unsupported' when the provided evidence doesnot substantiate a claim.",
+              "- Use 'unknown' when the available sources cannot establish the answer.",
+              "",
+              "IMPORTANT:",
+              "Do not manufacture certainty.",
+              "Scientific accuracy is more important than producing an impressive answer."
+            ].join("\n")
           },
           {
             role: "user",
-            content:
+            content: [
               `Research question:
-${request.question}
 
-Research gaps identified:
-
-${gapAnalysis.gaps
-  .map(
-    (gap, index) =>
-      `${index + 1}. ${gap.claim}
+${request.question}`,
+              "",
+              "Research gaps identified:",
+              "",
+              gapAnalysis.gaps.length > 0
+                ? gapAnalysis.gaps
+                    .map(
+                      (gap, index) =>
+                        `${index + 1}. ${gap.claim}
 Problem: ${gap.problem}
 Priority: ${gap.priority}
 Search queries: ${gap.searchQueries.join(", ")}`
-  )
-  .join("\n\n")}
-
-Collected sources:
-
-${researchContext}
-
-Produce the final rigorous scientific synthesis.`
+                    )
+                    .join("\n\n")
+                : "No significant research gaps were detected.",
+              "",
+              "Collected evidence:",
+              "",
+              researchContext,
+              "",
+              "Produce the final rigorous scientific synthesis."
+            ].join("\n")
           }
         ],
         temperature: 0.2
       });
 
+    /*
+     * ============================================================
+     * RESULT
+     * ============================================================
+     */
+
     return {
       question: request.question,
       status: "completed",
       summary: response.content,
-      sources: updatedSourceList.map(
+      sources: finalSources.map(
         (source) => ({
           title: source.title,
           url: source.url,
@@ -440,9 +445,210 @@ Produce the final rigorous scientific synthesis.`
     };
   }
 
+  /*
+   * ============================================================
+   * INITIAL QUERY GENERATION
+   * ============================================================
+   */
+
+  private buildInitialQueries(
+    question: string
+  ): string[] {
+    return [
+      question,
+      `${question} scientific evidence`,
+      `${question} primary research peer reviewed`
+    ];
+  }
+
+  /*
+   * ============================================================
+   * SEARCH
+   * ============================================================
+   */
+
+  private async executeSearch(
+    query: string,
+    researchCapability: {
+      execute(
+        input: unknown
+      ): Promise<unknown>;
+    },
+    sources: Map<
+      string,
+      ResearchSource
+    >,
+    sourceLimit: number
+  ): Promise<void> {
+    try {
+      const searchResult =
+        (await researchCapability.execute({
+          question: query
+        })) as CapabilityResearchResult;
+
+      if (
+        !searchResult?.sources?.length
+      ) {
+        console.log(
+          `[Researcher] No results for query: ${query}`
+        );
+
+        return;
+      }
+
+      for (const result of searchResult.sources) {
+        if (!result?.url) {
+          continue;
+        }
+
+        const normalizedUrl =
+          this.normalizeUrl(
+            result.url
+          );
+
+        if (
+          !sources.has(
+            normalizedUrl
+          )
+        ) {
+          sources.set(
+            normalizedUrl,
+            {
+              title:
+                result.title ??
+                "Untitled source",
+
+              url:
+                result.url,
+
+              snippet:
+                result.snippet ??
+                ""
+            }
+          );
+        }
+
+        if (
+          sources.size >=
+          sourceLimit
+        ) {
+          break;
+        }
+      }
+    } catch (error) {
+      console.error(
+        `[Researcher] Search failed: ${query}`,
+        error
+      );
+    }
+  }
+
+  /*
+   * ============================================================
+   * SOURCE EVALUATION
+   * ============================================================
+   */
+
+  private async evaluateSources(
+    sourceList: ResearchSource[],
+    sourceEvaluator: SourceEvaluator,
+    question: string
+  ): Promise<void> {
+    for (const source of sourceList) {
+      console.log(
+        `[Researcher] Evaluating: ${source.title}`
+      );
+
+      try {
+        source.evaluation =
+          await sourceEvaluator.evaluate(
+            source,
+            question
+          );
+      } catch (error) {
+        console.error(
+          `[Researcher] Failed to evaluate source: ${source.title}`,
+          error
+        );
+      }
+    }
+  }
+
+  /*
+   * ============================================================
+   * RANKING
+   * ============================================================
+   */
+
+  private rankSources(
+    sourceList: ResearchSource[]
+  ): void {
+    sourceList.sort(
+      (a, b) =>
+        (b.evaluation?.score ?? 0) -
+        (a.evaluation?.score ?? 0)
+    );
+  }
+
+  private logRanking(
+    sources: ResearchSource[],
+    label: string
+  ): void {
+    console.log(
+      `[Researcher] ${label}:`
+    );
+
+    for (const source of sources) {
+      console.log(
+        `${source.evaluation?.score ?? 0}/100 - ${source.title}`
+      );
+    }
+  }
+
+  /*
+   * ============================================================
+   * GAP PRIORITIZATION
+   * ============================================================
+   */
+
+  private prioritizeGaps(
+    gaps: readonly ResearchGap[]
+  ): ResearchGap[] {
+    const priorityWeight: Record<
+      ResearchGap["priority"],
+      number
+    > = {
+      high: 3,
+      medium: 2,
+      low: 1
+    };
+
+    return [...gaps]
+      .filter(
+        (gap) =>
+          gap.priority === "high" ||
+          gap.priority === "medium"
+      )
+      .sort(
+        (a, b) =>
+          priorityWeight[b.priority] -
+          priorityWeight[a.priority]
+      )
+      .slice(
+        0,
+        MAX_GAP_SEARCHES
+      );
+  }
+
+  /*
+   * ============================================================
+   * TARGETED GAP RESEARCH
+   * ============================================================
+   */
+
   private async executeGapResearch(
     gap: ResearchGap,
-    webSearch: {
+    researchCapability: {
       execute(
         input: unknown
       ): Promise<unknown>;
@@ -452,79 +658,88 @@ Produce the final rigorous scientific synthesis.`
       ResearchSource
     >
   ): Promise<void> {
-    for (const query of gap.searchQueries) {
+    const queries =
+      gap.searchQueries.slice(
+        0,
+        MAX_QUERIES_PER_GAP
+      );
+
+    for (const query of queries) {
       if (
         sources.size >=
-        MAX_SOURCES
+        MAX_TOTAL_SOURCES
       ) {
-        console.log(
-          "[Researcher] Maximum source limit reached during gap research."
-        );
-
         return;
       }
 
-      if (!query.trim()) {
-        continue;
-      }
-
       console.log(
-        `[Researcher] Targeted research for gap: ${query}`
+        `[Researcher] Targeted research: ${query}`
       );
 
-      try {
-        const searchResult =
-          (await webSearch.execute({
-            query
-          })) as WebSearchOutput;
+      await this.executeSearch(
+        query,
+        researchCapability,
+        sources,
+        MAX_TOTAL_SOURCES
+      );
 
-        if (
-          !searchResult ||
-          !Array.isArray(searchResult.results)
-        ) {
-          continue;
-        }
-
-        for (const result of searchResult.results) {
-          if (
-            !result ||
-            typeof result.url !== "string" ||
-            !result.url.trim()
-          ) {
-            continue;
-          }
-
-          const normalizedUrl =
-            result.url
-              .toLowerCase()
-              .replace(/\/$/, "");
-
-          if (!sources.has(normalizedUrl)) {
-            sources.set(
-              normalizedUrl,
-              {
-                title: result.title ?? "Untitled source",
-                url: result.url,
-                snippet: result.snippet ?? ""
-              }
-            );
-          }
-
-          if (
-            sources.size >=
-            MAX_SOURCES
-          ) {
-            break;
-          }
-        }
-      } catch (error) {
-        console.error(
-          `[Researcher] Gap search failed: ${query}`,
-          error
-        );
-      }
+      console.log(
+        `[Researcher] Sources after targeted search: ${sources.size}`
+      );
     }
   }
+
+  /*
+   * ============================================================
+   * RESEARCH CONTEXT
+   * ============================================================
+   */
+
+  private buildResearchContext(
+    sources: ResearchSource[]
+  ): string {
+    return sources
+      .map(
+        (source, index) =>
+          [
+            `Source ${index + 1}`,
+            `Title: ${source.title}`,
+            `URL: ${source.url}`,
+            `Content: ${source.snippet}`,
+            "",
+            "Evaluation:",
+            `Score: ${source.evaluation?.score ?? "unknown"}/100`,
+            `Type: ${source.evaluation?.sourceType ?? "unknown"}`,
+            `Credibility: ${source.evaluation?.credibility ?? "unknown"}/100`,
+            `Relevance: ${source.evaluation?.relevance ?? "unknown"}/100`,
+            `Evidence quality: ${source.evaluation?.evidenceQuality ?? "unknown"}/100`,
+            `Recency: ${source.evaluation?.recency ?? "unknown"}/100`,
+            `Reasoning: ${source.evaluation?.reasoning ?? "unknown"}`
+          ].join("\n")
+      )
+      .join("\n\n");
+  }
+
+  /*
+   * ============================================================
+   * URL NORMALIZATION
+   * ============================================================
+   */
+
+  private normalizeUrl(
+    url: string
+  ): string {
+    return url
+      .trim()
+      .toLowerCase()
+      .replace(/\/$/, "");
+  }
+
+  /*
+   * ============================================================
+   * SHUTDOWN
+   * ============================================================
+   */
 
   async shutdown(): Promise<void> {
     this.context = null;

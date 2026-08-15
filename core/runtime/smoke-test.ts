@@ -8,7 +8,7 @@ async function main() {
   const result = await runtime.agents.execute(
     researcher,
     {
-      objective: context.task.objective,
+      question: context.task.objective,
     }
   );
 

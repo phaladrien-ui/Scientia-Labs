@@ -1,4 +1,4 @@
-import type { SearchResult } from "../types";
+import type { SearchResult } from "../web-types";
 
 export async function searchDuckDuckGo(
   query: string
